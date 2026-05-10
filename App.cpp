@@ -18,7 +18,10 @@ void App::run(istream& in) {
         
         // Parse the command name (first word)
         if (!(iss >> commandName)) continue; 
-        
+        // Handle Upper case
+        for (char &c : commandName) {
+            c = tolower(c);
+        }
         // Get the rest of the string as arguments
         getline(iss, args); 
         if (!args.empty() && args[0] == ' ') {
