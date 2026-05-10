@@ -6,13 +6,13 @@
 
 class AddCommand : public ICommand {
 private:
-    // Reference to the main database to reflect changes globally
-    std::map<int, std::set<int>>& mabnat;
+    // Reference to the main database
+    std::map<int, std::set<int>>& database;
 
 public:
-    // Constructor injects the database reference
+    // Constructor
     AddCommand(std::map<int, std::set<int>>& db);
-    
-    // Executes the add logic using the provided arguments
-    void execute(const std::string& args) override; 
+
+    // Execute the add command
+    void execute(const std::string& args) override;
 };

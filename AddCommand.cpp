@@ -1,21 +1,28 @@
 #include "AddCommand.h"
 #include <sstream>
 
-using namespace std;
+// Constructor implementation
+AddCommand::AddCommand(std::map<int, std::set<int>>& db) : database(db) {}
 
-AddCommand::AddCommand(map<int, set<int>>& db) : mabnat(db) {}
-
-void AddCommand::execute(const string& args) {
-    istringstream iss(args);
+// Execute the add command: parse args and update the local database
+void AddCommand::execute(const std::string& args) {
+    std::istringstream iss(args);
     int userId;
-    int productId;
+    
+    // Extract User ID, return if invalid
+    if (!(iss >> userId)) return;
 
-    // Extract userId first. Proceed only if successful.
-    if (iss >> userId) {
-        // Extract all productIds and insert them into the user's set.
-        // std::set automatically handles duplicates.
-        while (iss >> productId) {
-            mabnat[userId].insert(productId);
-        }
+    int productId;
+    bool hasProducts = false;
+    
+    // Extract Product IDs and insert into the database
+    while (iss >> productId) {
+        database[userId].insert(productId);
+        hasProducts = true;
     }
+
+    // Ignore command if no products were provided 
+    if (!hasProducts) return;
+
+    // TODO: Call the external UPDATE_DATA module here
 }
