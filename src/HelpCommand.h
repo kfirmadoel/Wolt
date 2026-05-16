@@ -1,5 +1,6 @@
 #pragma once
 #include "ICommand.h"
+#include <string>
 
 class HelpCommand : public ICommand {
 public:

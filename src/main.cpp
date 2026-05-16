@@ -13,8 +13,9 @@ int main() {
     // The central database structure we agreed upon
     map<int, set<int>> database;
 
-    // 1. Ask the Data module to fill the database (Main doesn't know HOW)
-   // DataManager::loadAllData(database);
+// 1. Get the fully populated database from the Data module
+    // The DataManager is now responsible for creating the map
+    //map<int, set<int>> database = DataManager::loadAllData();
 
     // 2. Instantiate command objects with the shared database
     AddCommand addCmd(database);
