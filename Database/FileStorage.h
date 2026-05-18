@@ -26,7 +26,7 @@ public:
     void addProductWatched(int userId, int productId) override;
 
     /***
-     * Rewrite the snapshot file
+     * Rewrite the file at more readable format
      * @param data the about all the users
      */
     void rewriteFormat(const UsersData& data);
