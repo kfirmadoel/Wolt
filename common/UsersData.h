@@ -4,28 +4,45 @@
 #include "UserData.h"
 #include <map>
 
+/**
+ * Represents all the users data
+ */
 class UsersData
 {
 public:
-    /*
-    This function adds userData to the map of users*/
-    void addUserData(const UserData &user);
-    /*
-    Returns true if user exists, false otherwise*/
-    bool userExists(int userId) const;
-
-    /* Returns pointer to user data if user exists, nullptr otherwise
+/**
+ * Checks if a user exists
+ * @param userId user id
+ * @return true if the user exists
+ */
+    bool isUserExists(int userId) const;
+    /**
+     * Returns the user data for the given user id
+     * @param userId user id
+     * @return user data
      */
-    const UserData *getUserPtr(int userId) const;
-    UserData *getUserPtr(int userId);
-
-    /*This function returns a map of all users
+    const UserData& getUser(int userId) const;
+    /**
+     * Returns all the users data
+     * @return all the users data as a map
      */
-    const std::map<int, UserData> &getAllUsers() const;
+    const std::map<int, UserData>& getAllUsers() const;
+    /**
+     * Creates a new user
+     * @param userId user id
+     */
+    void createUser(int userId);
+    /**
+     * Add a product to a user
+     * @param userId user id
+     * @param productId product id
+     */
+    void addProduct(int userId, int productId);
 
 private:
-    /*
-    This id a map of all users*/
+    /**
+     * All the users data
+     */
     std::map<int, UserData> data;
 };
 

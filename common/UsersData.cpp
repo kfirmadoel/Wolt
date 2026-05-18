@@ -1,38 +1,22 @@
 #include "UsersData.h"
+#include <stdexcept>
 
-void UsersData::addUserData(const UserData &user)
-{
-    data[user.getUserId()] = user;
-}
-
-bool UsersData::userExists(int userId) const
-{
+bool UsersData::isUserExists(int userId) const {
     return data.find(userId) != data.end();
 }
 
-const UserData *UsersData::getUserPtr(int userId) const
-{
-    auto it = data.find(userId);
-    if (it != data.end())
-        return &it->second;
-    return nullptr;
+const UserData& UsersData::getUser(int userId) const {
+    return data.at(userId);
 }
 
-/**
- * Returns pointer to user data if user exists, nullptr otherwise
- */
-UserData *UsersData::getUserPtr(int userId)
-{
-    auto it = data.find(userId);
-    if (it != data.end())
-        return &it->second;
-    return nullptr;
-}
-
-/**
- *  Returns a map of all users
- */
-const std::map<int, UserData> &UsersData::getAllUsers() const
-{
+const std::map<int, UserData>& UsersData::getAllUsers() const {
     return data;
+}
+
+void UsersData::createUser(int userId) {
+    data.emplace(userId, UserData(userId));
+}
+
+void UsersData::addProduct(int userId, int productId) {
+    data[userId].addProduct(productId);
 }

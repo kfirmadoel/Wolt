@@ -3,37 +3,64 @@
 
 #include <set>
 
+/**
+ * Represents user data
+ */
 class UserData
 {
 public:
     /**
      * Default constructor
+     * @param id user id
      */
-    UserData() = default;
+    UserData(int id);
+
     /**
-     * Constructor with parameters(user id and set of watched products)
+     * Constructor
+     * @param id user id
+     * @param products set of watched products
      */
     UserData(int id, const std::set<int> &products);
+
     /**
-     * Returns user id
+     * Returns the user id
+     * @return user id
      */
     int getUserId() const;
+
     /**
-     * Returns set of watched products of user
+     * Returns the set of watched products by the user
+     * @return set of watched products
      */
     const std::set<int> &getWatchedProducts() const;
+
     /**
-     * Adds products to watched products
+     * Adds a set of products to the set of watched products by the user
+     * @param products set of products that has been watched
      */
     void addProducts(const std::set<int> &products);
 
+    /**
+     * Adds a product to the set of watched products by the user
+     * @param productId product id
+     */
+    void addProduct(int productId);
+
+    /**
+     * Checks if the user has watched the product
+     * @param productId product id
+     * @return true if the user has watched the product, false otherwise
+     */
+    bool hasProductWatched(int productId) const noexcept;
+
 private:
     /**
-     *   User id
-     * */
+     * User id
+     */
     int userId = -1;
+
     /**
-     * Set of watched products for this user
+     * Set of watched products by the user
      */
     std::set<int> watchedProducts;
 };

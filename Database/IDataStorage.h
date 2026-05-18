@@ -1,23 +1,31 @@
 #ifndef IDATASTORAGE_H
 #define IDATASTORAGE_H
 
-#include "common/UsersData.h"   
+#include "common/UsersData.h"
 
+/**
+ * Represents the  interface for data storage
+ */
 class IDataStorage {
 public:
-/**
- * Destructor
- */
     virtual ~IDataStorage() = default;
 
-    /* return a fully populated UsersData object with all the users data if it exists,
-     * otherwise return an empty UsersData object    
-    */
-    virtual UsersData getAllData() = 0;
+    /**
+     * This method loads all the events from the storage
+     */
+    virtual void loadAllEvents(UsersData& data) = 0;
 
-    /* Save the entire UsersData to the database
-    */
-    virtual void updateData(const UsersData& data) = 0;
+    /**
+     * This method appends a new event to the storage
+     */
+    virtual void addProductWatched(int userId, int productId) = 0;
+
+
+    /**
+     * Rewrite the data file to be more readable
+     * @param data all the users
+     */
+        void rewriteFormat(const UsersData& data);
 };
 
 #endif
