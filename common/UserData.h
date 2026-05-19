@@ -10,7 +10,12 @@ class UserData
 {
 public:
     /**
-     * Default constructor
+     * Default constructor for map initialization
+     */
+    UserData() = default; 
+
+    /**
+     * Constructor with ID
      * @param id user id
      */
     UserData(int id);

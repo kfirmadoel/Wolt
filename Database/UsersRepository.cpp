@@ -22,6 +22,7 @@ const std::map<int, UserData>& UsersRepository::getAllUsers() const {
 void UsersRepository::createUser(int userId) {
     if (!users.isUserExists(userId)) {
         users.createUser(userId);
+        storage.rewriteFormat(users);
     }
 }
 
