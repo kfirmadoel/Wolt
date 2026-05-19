@@ -1,7 +1,7 @@
 #ifndef IDATASTORAGE_H
 #define IDATASTORAGE_H
 
-#include "common/UsersData.h"
+#include "UsersData.h"
 
 /**
  * Represents the  interface for data storage
@@ -25,7 +25,7 @@ public:
      * Rewrite the data file to be more readable
      * @param data all the users
      */
-        void rewriteFormat(const UsersData& data);
+        virtual void rewriteFormat(const UsersData& data) = 0;
 };
 
 #endif
