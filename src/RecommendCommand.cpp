@@ -31,8 +31,16 @@ void RecommendCommand::execute(const std::string& args) {
     std::istringstream iss(args);
     int targetUser, targetProduct;
 
-    // Validate input IDs
-    if (!(iss >> targetUser >> targetProduct)) return;
+   char junk;
+    // Validate input IDs and check for trailing garbage
+    if (!(iss >> targetUser >> targetProduct) || (iss >> junk) || targetUser <= 0 || targetProduct <= 0) {
+        return;
+    }
+
+    // Ensure the user actually exists in the database
+    if (database.find(targetUser) == database.end()) {
+        return;
+    }
 
     // 1. Find users who watched targetProduct and store their weights
     std::map<int, int> userWeights;
