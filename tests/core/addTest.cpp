@@ -49,4 +49,29 @@ TEST(AddCommandTest, InvalidInputHandling) {
     
     // Verify the invalid ID was ignored and not added to the map
     EXPECT_TRUE(mockDb.find(-5) == mockDb.end());
+    // Only User ID provided, no products test.
+    addCmd.execute("1");
+    EXPECT_EQ(mockDb[1].size(), 0);
+}
+// Test validation for completely invalid string inputs (non-numeric IDs)
+TEST(AddCommandTest, StringInputHandling) {
+    std::map<int, std::set<int>> mockDb;
+    AddCommand addCmd(mockDb);
+
+
+    addCmd.execute("abc 1 2");
+    
+  
+    EXPECT_TRUE(mockDb.empty());
+}
+// Test handling when a non-numeric string appears after several valid products
+TEST(AddCommandTest, StringAsFourthProduct) {
+    std::map<int, std::set<int>> mockDb;
+    AddCommand addCmd(mockDb);
+
+    addCmd.execute("200 10 20 30 abc");
+    
+    EXPECT_EQ(mockDb[200].count(10), 0);
+    EXPECT_EQ(mockDb[200].count(20), 0);
+    EXPECT_EQ(mockDb[200].count(30), 0);
 }
