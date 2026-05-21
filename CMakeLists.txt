@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
-project(WoltProject)
-
+project(WoltCoreProject)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# --- הבאת Google Test ---
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -13,23 +13,19 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-include_directories(common Database Logic .)
+# --- הגדרת נתיבי החיפוש ל-Headers (ה-IntelliSense קורא מפה) ---
+include_directories(src src/common src/Database src/core tests .)
 
-file(GLOB_RECURSE PROJECT_SOURCES 
-    "common/*.cpp" 
-    "Database/*.cpp" 
-    "Logic/*.cpp"
-)
+# --- 1. אוספים את כל קבצי ה-cpp שנמצאים תחת src ---
+file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp")
 
-file(GLOB_RECURSE ALL_TEST_FILES "tests/*.cpp")
-add_executable(runAllTests ${PROJECT_SOURCES} ${ALL_TEST_FILES})
-target_link_libraries(runAllTests GTest::gtest_main)
+# --- 2. מוציאים את main.cpp החוצה כדי שלא יתנגש בטסטים ---
+list(REMOVE_ITEM PROJECT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
+# --- 3. בניית האפליקציה: לוקחים את הקוד הנקי ומוסיפים לו את main.cpp בחזרה ---
+add_executable(wolt_app ${PROJECT_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
-foreach(test_file ${ALL_TEST_FILES})
-
-    get_filename_component(target_name ${test_file} NAME_WE)
-    
-    add_executable(${target_name} ${PROJECT_SOURCES} ${test_file})
-    target_link_libraries(${target_name} GTest::gtest_main)
-endforeach()
+# --- 4. בניית הטסטים: לוקחים את הקוד הנקי (בלי main) ואת קבצי הטסטים ---
+file(GLOB_RECURSE ALL_TESTS "tests/*.cpp")
+add_executable(wolt_tests ${PROJECT_SOURCES} ${ALL_TESTS})
+target_link_libraries(wolt_tests GTest::gtest_main)
