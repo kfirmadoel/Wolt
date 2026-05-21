@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../src/RecommendCommand.h"
+#include "RecommendCommand.h"
 #include <map>
 #include <set>
 #include <string>

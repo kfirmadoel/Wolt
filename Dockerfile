@@ -1,22 +1,22 @@
 FROM gcc:latest
 
-# התקנת CMake
+# Install CMake
 RUN apt-get update && apt-get install -y cmake
 
-# העתקת הפרויקט לתוך הקונטיינר
+# Set the working directory inside the container
 COPY . /usr/src/wolt_project
 WORKDIR /usr/src/wolt_project
 
-# מוודאים שתיקיית data קיימת בתוך הקונטיינר (למקרה שה-gitkeep לא עבר)
+# create data directory for the application to use
 RUN mkdir -p data
 
-# יצירת תיקיית build, הרצת cmake וקימפול
+# build the application
 RUN mkdir build
 WORKDIR /usr/src/wolt_project/build
 RUN cmake .. && make
 
-# חזרה לתיקייה הראשית כדי שהתוכנית תרוץ מול תיקיית data הנכונה
+# Set the working directory back to the project root for running the application
 WORKDIR /usr/src/wolt_project
 
-# ברירת מחדל: הרצת האפליקציה הראשית
+# Run the application
 CMD ["./build/wolt_app"]
