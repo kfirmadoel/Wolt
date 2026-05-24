@@ -1,14 +1,22 @@
 FROM gcc:latest
 
+# Install CMake
 RUN apt-get update && apt-get install -y cmake
 
-COPY . /usr/src/wolt_tests
-WORKDIR /usr/src/wolt_tests
+# Set the working directory inside the container
+COPY . /usr/src/wolt_project
+WORKDIR /usr/src/wolt_project
 
+# create data directory for the application to use
+RUN mkdir -p data
+
+# build the application
 RUN mkdir build
-WORKDIR /usr/src/wolt_tests/build
-
+WORKDIR /usr/src/wolt_project/build
 RUN cmake .. && make
 
-# Run tests
-CMD ["./runAllTests"]
+# Set the working directory back to the project root for running the application
+WORKDIR /usr/src/wolt_project
+
+# Run the application
+CMD ["./build/wolt_app"]
