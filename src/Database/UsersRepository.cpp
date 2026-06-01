@@ -7,26 +7,26 @@ UsersRepository::UsersRepository(IDataStorage& storage)
     storage.rewriteFormat(users);
 }
 
-bool UsersRepository::isUserExists(int userId) const {
+bool UsersRepository::isUserExists(const std::string& userId) const {
     return users.isUserExists(userId);
 }
 
-const UserData& UsersRepository::getUser(int userId) const {
+const UserData& UsersRepository::getUser(const std::string& userId) const {
     return users.getUser(userId);
 }
 
-const std::map<int, UserData>& UsersRepository::getAllUsers() const {
+const std::map<std::string, UserData>& UsersRepository::getAllUsers() const {
     return users.getAllUsers();
 }
 
-void UsersRepository::createUser(int userId) {
+void UsersRepository::createUser(const std::string& userId) {
     if (!users.isUserExists(userId)) {
         users.createUser(userId);
         storage.rewriteFormat(users);
     }
 }
 
-void UsersRepository::addProductToUser(int userId, int productId) {
+void UsersRepository::addProductToUser(const std::string& userId, const std::string& productId) {
     if (!users.isUserExists(userId)) {
         users.createUser(userId);
     }

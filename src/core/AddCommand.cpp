@@ -7,18 +7,17 @@ AddCommand::AddCommand(UsersRepository& repo) : repository(repo) {}
 // Execute the add command: parse args and update the local database
 void AddCommand::execute(const std::string& args) {
     std::istringstream iss(args);
-    int userId;
+    std::string userId;
     
     // Extract User ID, return if invalid
-    if (!(iss >> userId)||userId <= 0) return;
+    if (!(iss >> userId)) return;
 
-    int productId;
+    std::string productId;
     bool hasProducts = false;
     std::set<int> tempProducts;
     
     // Extract Product IDs and insert into the database
     while (iss >> productId) {
-        if (productId <= 0) return; 
         repository.addProductToUser(userId, productId);
         hasProducts = true;
     }

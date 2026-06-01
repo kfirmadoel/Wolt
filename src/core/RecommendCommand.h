@@ -9,7 +9,7 @@ private:
    UsersRepository& repository;
 
     // Helper to calculate similarity score between two users
-    int getSimilarity(int user1, int user2);
+    int getSimilarity(const std::string& user1, const std::string& user2);
 
 public:
     // Constructor

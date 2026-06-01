@@ -29,7 +29,7 @@ TEST_F(DatabaseTest, FileStorageCreatesDatabaseFileAfterWrite) {
     UsersRepository repo(storage);
 
     // 2. Perform an action that should trigger a file creation
-    repo.createUser(99); 
+    repo.createUser("99"); 
     
     // 3. Now check if the file was actually created on the disk
     std::ifstream file(testFileName);
@@ -42,8 +42,8 @@ TEST_F(DatabaseTest, RepositoryAddsUserAndProductSuccessfully) {
     FileStorage storage(testFileName);
     UsersRepository repo(storage);
 
-    int testUserId = 50;
-    int testProductId = 1004;
+    std::string testUserId = "50";
+    std::string testProductId = "1004";
 
     // 2. Action - Create a user and append a watched product
     repo.createUser(testUserId);
@@ -53,12 +53,12 @@ TEST_F(DatabaseTest, RepositoryAddsUserAndProductSuccessfully) {
     EXPECT_TRUE(repo.isUserExists(testUserId)) << "Repository failed to create user.";
     
     // Verify that querying a non-existent user behaves as expected
-    EXPECT_FALSE(repo.isUserExists(999)) << "Repository falsely identified a non-existent user.";
+    EXPECT_FALSE(repo.isUserExists("999")) << "Repository falsely identified a non-existent user.";
     
 }
 // Test 3: Verifies that data actually persists after the storage object is destroyed
 TEST_F(DatabaseTest, DataPersistsAfterRestart) {
-    int persistentUserId = 88;
+    std::string persistentUserId = "88";
 
     //Create a repository, add a user, and destroy it
     {
@@ -82,5 +82,5 @@ TEST_F(DatabaseTest, HandlesMissingFileGracefully) {
     FileStorage storage(testFileName);
     UsersRepository repo(storage);
 
-    EXPECT_FALSE(repo.isUserExists(999));
+    EXPECT_FALSE(repo.isUserExists("999"));
 }

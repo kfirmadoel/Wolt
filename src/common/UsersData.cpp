@@ -1,22 +1,22 @@
 #include "UsersData.h"
 #include <stdexcept>
 
-bool UsersData::isUserExists(int userId) const {
+bool UsersData::isUserExists(const std::string& userId) const {
     return data.find(userId) != data.end();
 }
 
-const UserData& UsersData::getUser(int userId) const {
+const UserData& UsersData::getUser(const std::string& userId) const {
     return data.at(userId);
 }
 
-const std::map<int, UserData>& UsersData::getAllUsers() const {
+const std::map<std::string, UserData>& UsersData::getAllUsers() const {
     return data;
 }
 
-void UsersData::createUser(int userId) {
+void UsersData::createUser(const std::string& userId) {
     data.emplace(userId, UserData(userId));
 }
 
-void UsersData::addProduct(int userId, int productId) {
+void UsersData::addProduct(const std::string& userId, const std::string& productId) {
     data[userId].addProduct(productId);
 }

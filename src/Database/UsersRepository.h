@@ -3,6 +3,8 @@
 
 #include "UsersData.h"
 #include "IDataStorage.h"
+#include <string>
+#include <map>
 
 /**
  * Represents the users repository
@@ -19,32 +21,32 @@ public:
      * @param userId user id
      * @return true if the user exists, false otherwise
      */
-    bool isUserExists(int userId) const;
+    bool isUserExists(const std::string& userId) const;
     
     /**
      * Returns the user data for the given user id
      * @param userId user id
      * @return user data
      */
-    const UserData& getUser(int userId) const;
+    const UserData& getUser(const std::string& userId) const;
     
     /**
      * Returns all the users data
      * @return all the users data in a map structure
      */
-    const std::map<int, UserData>& getAllUsers() const;
+    const std::map<std::string, UserData>& getAllUsers() const;
 
     /**
      * Adds a product to a user by user id
      * @param userId user id
      * @param productId product id
      */
-    void addProductToUser(int userId, int productId);
+    void addProductToUser(const std::string& userId, const std::string& productId);
     /**
      * Creates a new user
      * @param userId user id
      */
-    void createUser(int userId);
+    void createUser(const std::string& userId);
 
 private:
     /**

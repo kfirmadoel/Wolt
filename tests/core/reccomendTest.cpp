@@ -1,3 +1,4 @@
+// reccomendTest.cpp
 #include <gtest/gtest.h>
 #include "RecommendCommand.h"
 #include "FileStorage.h"
@@ -21,8 +22,8 @@ protected:
         mockDb = new UsersRepository(*storage);
     }
 
-    void addData(int userId, std::initializer_list<int> products) {
-        for (int p : products) {
+    void addData(const std::string& userId, std::initializer_list<std::string> products) {
+        for (const std::string& p : products) {
             mockDb->addProductToUser(userId, p);
         }
     }
@@ -31,17 +32,16 @@ protected:
         storage = nullptr; mockDb = nullptr;
         resetDb();
         
-        // Initialize the database exactly as specified in the assignment appendix
-        addData(1, {100, 101, 102, 103});
-        addData(2, {101, 102, 104, 105, 106});
-        addData(3, {100, 104, 105, 107, 108});
-        addData(4, {101, 105, 106, 107, 109, 110});
-        addData(5, {100, 102, 103, 105, 108, 111});
-        addData(6, {100, 103, 104, 110, 111, 112, 113});
-        addData(7, {102, 105, 106, 107, 108, 109, 110});
-        addData(8, {101, 104, 105, 106, 109, 111, 114});
-        addData(9, {100, 103, 105, 107, 112, 113, 115});
-        addData(10, {100, 102, 105, 106, 107, 109, 110, 116});
+        addData("1", {"100", "101", "102", "103"});
+        addData("2", {"101", "102", "104", "105", "106"});
+        addData("3", {"100", "104", "105", "107", "108"});
+        addData("4", {"101", "105", "106", "107", "109", "110"});
+        addData("5", {"100", "102", "103", "105", "108", "111"});
+        addData("6", {"100", "103", "104", "110", "111", "112", "113"});
+        addData("7", {"102", "105", "106", "107", "108", "109", "110"});
+        addData("8", {"101", "104", "105", "106", "109", "111", "114"});
+        addData("9", {"100", "103", "105", "107", "112", "113", "115"});
+        addData("10", {"100", "102", "105", "106", "107", "109", "110", "116"});
     }
 
     void TearDown() override {
@@ -51,7 +51,6 @@ protected:
     }
 };
 
-// 1. Test case for the primary example from the assignment description
 TEST_F(RecommendCommandTest, OfficialAssignmentExample) {
     RecommendCommand recCmd(*mockDb);
 
@@ -63,12 +62,11 @@ TEST_F(RecommendCommandTest, OfficialAssignmentExample) {
     EXPECT_EQ(output, expectedOutput);
 }
 
-// 2. Test case to verify tie-breaking rules (ascending product ID when scores match)
 TEST_F(RecommendCommandTest, TieBreakingRules) {
-    resetDb(); // המחליף של mockDb.clear() שהיה לך
-    addData(1, {10}); 
-    addData(2, {10, 99, 50, 20}); 
-    addData(3, {10, 99, 50, 20}); 
+    resetDb(); 
+    addData("1", {"10"}); 
+    addData("2", {"10", "99", "50", "20"}); 
+    addData("3", {"10", "99", "50", "20"}); 
 
     RecommendCommand recCmd(*mockDb);
 
@@ -79,11 +77,10 @@ TEST_F(RecommendCommandTest, TieBreakingRules) {
     EXPECT_EQ(output, "20 50\n");
 }
 
-// 3. Test case to verify the cap of a maximum of 10 recommendation results
 TEST_F(RecommendCommandTest, MaxTenRecommendationsLimit) {
     resetDb();
-    addData(1, {1});
-    addData(2, {1, 100, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24});
+    addData("1", {"1"});
+    addData("2", {"1", "100", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"});
 
     RecommendCommand recCmd(*mockDb);
 
@@ -95,7 +92,6 @@ TEST_F(RecommendCommandTest, MaxTenRecommendationsLimit) {
     EXPECT_EQ(spaces, 9);
 }
 
-// 4. Test case for validating malformed, empty, or negative inputs
 TEST_F(RecommendCommandTest, InvalidInputHandling) {
     RecommendCommand recCmd(*mockDb);
 
@@ -113,9 +109,5 @@ TEST_F(RecommendCommandTest, InvalidInputHandling) {
 
     testing::internal::CaptureStdout();
     recCmd.execute("1 104 abc");
-    EXPECT_EQ(testing::internal::GetCapturedStdout(), "");
-
-    testing::internal::CaptureStdout();
-    recCmd.execute("-1 104");
     EXPECT_EQ(testing::internal::GetCapturedStdout(), "");
 }

@@ -6,7 +6,7 @@
 
 RecommendCommand::RecommendCommand(UsersRepository& repo) : repository(repo) {}
 
-int RecommendCommand::getSimilarity(int u1, int u2) {
+int RecommendCommand::getSimilarity(const std::string& u1, const std::string& u2) {
     int commonCount = 0;
     const auto& products1 = repository.getUser(u1).getWatchedProducts();
     const auto& products2 = repository.getUser(u2).getWatchedProducts();
@@ -29,11 +29,11 @@ int RecommendCommand::getSimilarity(int u1, int u2) {
 
 void RecommendCommand::execute(const std::string& args) {
     std::istringstream iss(args);
-    int targetUser, targetProduct;
+    std::string targetUser, targetProduct;
 
-   char junk;
+    char junk;
     // Validate input IDs and check for trailing garbage
-    if (!(iss >> targetUser >> targetProduct) || (iss >> junk) || targetUser <= 0 || targetProduct <= 0) {
+    if (!(iss >> targetUser >> targetProduct) || (iss >> junk)) {
         return;
     }
 
@@ -43,10 +43,10 @@ void RecommendCommand::execute(const std::string& args) {
     }
 
     // 1. Find users who watched targetProduct and store their weights
-    std::map<int, int> userWeights;
+    std::map<std::string, int> userWeights;
     for (auto const& pair : repository.getAllUsers()) {
-        int userId = pair.first;
-        const std::set<int>& products = pair.second.getWatchedProducts();
+        std::string userId = pair.first;
+        const std::set<std::string>& products = pair.second.getWatchedProducts();
 
         if (userId == targetUser) continue;
         if (products.count(targetProduct)) {
@@ -55,14 +55,14 @@ void RecommendCommand::execute(const std::string& args) {
     }   
     
     // 2. Score other products based on weights of similar users
-    std::map<int, int> productScores;
-    const std::set<int>& seenByTarget = repository.getUser(targetUser).getWatchedProducts();
+    std::map<std::string, int> productScores;
+    const std::set<std::string>& seenByTarget = repository.getUser(targetUser).getWatchedProducts();
 
     for (auto const& pair : userWeights) {
-        int userId = pair.first;
+        std::string userId = pair.first;
         int weight = pair.second;
 
-        for (int pid : repository.getUser(userId).getWatchedProducts()) {
+        for (const std::string& pid : repository.getUser(userId).getWatchedProducts()) {
             // Exclude already seen products and the target product itself
             if (pid != targetProduct && seenByTarget.find(pid) == seenByTarget.end()) {
                 productScores[pid] += weight;
@@ -71,9 +71,9 @@ void RecommendCommand::execute(const std::string& args) {
     }
 
     // 3. Sort products by score (descending) then by ID (ascending)
-    std::vector<std::pair<int, int>> sorted(productScores.begin(), productScores.end());
+    std::vector<std::pair<std::string, int>> sorted(productScores.begin(), productScores.end());
     
-    std::sort(sorted.begin(), sorted.end(), [](const std::pair<int, int>& a, const std::pair<int, int>& b) {
+    std::sort(sorted.begin(), sorted.end(), [](const std::pair<std::string, int>& a, const std::pair<std::string, int>& b) {
         if (a.second != b.second) return a.second > b.second; 
         return a.first < b.first; 
     });

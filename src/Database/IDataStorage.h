@@ -2,6 +2,7 @@
 #define IDATASTORAGE_H
 
 #include "UsersData.h"
+#include <string>
 
 /**
  * Represents the  interface for data storage
@@ -18,7 +19,7 @@ public:
     /**
      * This method appends a new event to the storage
      */
-    virtual void addProductWatched(int userId, int productId) = 0;
+    virtual void addProductWatched(const std::string& userId, const std::string& productId) = 0;
 
 
     /**

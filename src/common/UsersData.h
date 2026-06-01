@@ -3,6 +3,7 @@
 
 #include "UserData.h"
 #include <map>
+#include <string>
 
 /**
  * Represents all the users data
@@ -15,35 +16,35 @@ public:
  * @param userId user id
  * @return true if the user exists
  */
-    bool isUserExists(int userId) const;
+    bool isUserExists(const std::string& userId) const;
     /**
      * Returns the user data for the given user id
      * @param userId user id
      * @return user data
      */
-    const UserData& getUser(int userId) const;
+    const UserData& getUser(const std::string& userId) const;
     /**
      * Returns all the users data
      * @return all the users data as a map
      */
-    const std::map<int, UserData>& getAllUsers() const;
+    const std::map<std::string, UserData>& getAllUsers() const;
     /**
      * Creates a new user
      * @param userId user id
      */
-    void createUser(int userId);
+    void createUser(const std::string& userId);
     /**
      * Add a product to a user
      * @param userId user id
      * @param productId product id
      */
-    void addProduct(int userId, int productId);
+    void addProduct(const std::string& userId, const std::string& productId);
 
 private:
     /**
      * All the users data
      */
-    std::map<int, UserData> data;
+    std::map<std::string, UserData> data;
 };
 
 #endif
