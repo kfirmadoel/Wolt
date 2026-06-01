@@ -5,25 +5,26 @@
 #include "App.h"
 #include "AddCommand.h"
 #include "HelpCommand.h"
-//#include "DataManager.h" // The module provided by the "Data Person"
+#include "RecommendCommand.h"
+#include "FileStorage.h"
+#include "UsersRepository.h"
 
 using namespace std;
 
 int main() {
     // The central database structure we agreed upon
-    map<int, set<int>> database;
+    FileStorage storage("data/users_db.txt");
+    UsersRepository repository(storage);
 
-// 1. Get the fully populated database from the Data module
-    // The DataManager is now responsible for creating the map
-    //map<int, set<int>> database = DataManager::loadAllData();
 
-    // 2. Instantiate command objects with the shared database
-    AddCommand addCmd(database);
+    AddCommand addCmd(repository);
+    RecommendCommand recommendCmd(repository);
     HelpCommand helpCmd;
 
     // 3. Register commands in the system
     map<string, ICommand*> commands;
     commands["add"] = &addCmd;
+    commands["recommend"] = &recommendCmd;
     commands["help"] = &helpCmd;
 
     // 4. Run the application

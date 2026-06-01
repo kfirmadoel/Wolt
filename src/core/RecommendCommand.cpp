@@ -4,12 +4,12 @@
 #include <algorithm>
 #include <vector>
 
-RecommendCommand::RecommendCommand(std::map<int, std::set<int>>& db) : database(db) {}
+RecommendCommand::RecommendCommand(UsersRepository& repo) : repository(repo) {}
 
 int RecommendCommand::getSimilarity(int u1, int u2) {
     int commonCount = 0;
-    const auto& products1 = database.at(u1);
-    const auto& products2 = database.at(u2);
+    const auto& products1 = repository.getUser(u1).getWatchedProducts();
+    const auto& products2 = repository.getUser(u2).getWatchedProducts();
 
     auto it1 = products1.begin();
     auto it2 = products2.begin();
@@ -38,15 +38,15 @@ void RecommendCommand::execute(const std::string& args) {
     }
 
     // Ensure the user actually exists in the database
-    if (database.find(targetUser) == database.end()) {
+    if (!repository.isUserExists(targetUser)) {
         return;
     }
 
     // 1. Find users who watched targetProduct and store their weights
     std::map<int, int> userWeights;
-    for (auto const& pair : database) {
+    for (auto const& pair : repository.getAllUsers()) {
         int userId = pair.first;
-        const std::set<int>& products = pair.second;
+        const std::set<int>& products = pair.second.getWatchedProducts();
 
         if (userId == targetUser) continue;
         if (products.count(targetProduct)) {
@@ -56,13 +56,13 @@ void RecommendCommand::execute(const std::string& args) {
     
     // 2. Score other products based on weights of similar users
     std::map<int, int> productScores;
-    const std::set<int>& seenByTarget = database.at(targetUser);
+    const std::set<int>& seenByTarget = repository.getUser(targetUser).getWatchedProducts();
 
     for (auto const& pair : userWeights) {
         int userId = pair.first;
         int weight = pair.second;
 
-        for (int pid : database.at(userId)) {
+        for (int pid : repository.getUser(userId).getWatchedProducts()) {
             // Exclude already seen products and the target product itself
             if (pid != targetProduct && seenByTarget.find(pid) == seenByTarget.end()) {
                 productScores[pid] += weight;
