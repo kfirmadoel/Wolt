@@ -7,17 +7,24 @@ App::App(map<string, ICommand*> injectedCommands) : commands(injectedCommands) {
 
 void App::run(istream& in) {
     string line;
-    string commandName;
-    string args;
 
-    // Read input line by line until EOF [cite: 48, 55]
+    // Read input line by line until EOF
     while (getline(in, line)) {
+        // Fix Windows line endings (\r) artifact from Docker
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
+
         if (line.empty()) continue;
 
         // Global check: Ignore any line containing tabs 
         if (line.find('\t') != string::npos) continue;
 
         istringstream iss(line);
+        
+        // MOVED INSIDE THE LOOP: Fresh and clean for every command
+        string commandName;
+        string args;
         
         // Parse the command name (first word)
         if (!(iss >> commandName)) continue; 
@@ -28,6 +35,7 @@ void App::run(istream& in) {
         }
 
         // Get the rest of the string as arguments
+        // Because 'args' is fresh, if this fails due to EOF, 'args' remains safely empty!
         getline(iss, args); 
         if (!args.empty() && args[0] == ' ') {
             args = args.substr(1); // Clean leading space
@@ -39,7 +47,7 @@ void App::run(istream& in) {
                 // Polymorphic call to execute command logic
                 foundCommand->second->execute(args);
             } catch (...) {
-                // Silent catch to prevent printing errors [cite: 45, 47]
+                // Silent catch to prevent printing errors
             }
         }
     }
