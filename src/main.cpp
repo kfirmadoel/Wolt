@@ -8,10 +8,23 @@
 #include "RecommendCommand.h"
 #include "FileStorage.h"
 #include "UsersRepository.h"
+#include "TcpServer.h"
 
 using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <port_number>" << std::endl;
+        return 1;
+    }
+
+    int port;
+    try {
+        port = std::stoi(argv[1]);
+    } catch (const std::exception& e) {
+        std::cerr << "Invalid port number provided." << std::endl;
+        return 1;
+    }
     // The central database structure we agreed upon
     FileStorage storage("data/users_db.txt");
     UsersRepository repository(storage);
@@ -29,7 +42,9 @@ int main() {
 
     // 4. Run the application
     App app(commands);
-    app.run(cin);
+    std::cout << "Starting server on port " << port << "..." << std::endl;
+    TcpServer server(port, app);
+    server.run();
 
     return 0;
 }
