@@ -2,6 +2,7 @@
 #define USERDATA_H
 
 #include <set>
+#include <string>
 
 /**
  * Represents user data
@@ -18,56 +19,56 @@ public:
      * Constructor with ID
      * @param id user id
      */
-    UserData(int id);
+    UserData(const std::string& id);
 
     /**
      * Constructor
      * @param id user id
      * @param products set of watched products
      */
-    UserData(int id, const std::set<int> &products);
+    UserData(const std::string& id, const std::set<std::string> &products);
 
     /**
      * Returns the user id
      * @return user id
      */
-    int getUserId() const;
+    std::string getUserId() const; // אפשר גם להחזיר const std::string&
 
     /**
      * Returns the set of watched products by the user
      * @return set of watched products
      */
-    const std::set<int> &getWatchedProducts() const;
+    const std::set<std::string> &getWatchedProducts() const;
 
     /**
      * Adds a set of products to the set of watched products by the user
      * @param products set of products that has been watched
      */
-    void addProducts(const std::set<int> &products);
+    void addProducts(const std::set<std::string> &products);
 
     /**
      * Adds a product to the set of watched products by the user
      * @param productId product id
      */
-    void addProduct(int productId);
+    void addProduct(const std::string& productId);
 
     /**
      * Checks if the user has watched the product
      * @param productId product id
      * @return true if the user has watched the product, false otherwise
      */
-    bool hasProductWatched(int productId) const noexcept;
+    bool hasProductWatched(const std::string& productId) const noexcept;
 
 private:
     /**
      * User id
      */
-    int userId = -1;
+    std::string userId; // הורדנו את ה-1- כי string ריק מספיק כברירת מחדל
 
     /**
      * Set of watched products by the user
      */
-    std::set<int> watchedProducts;
+    std::set<std::string> watchedProducts;
 };
 
 #endif

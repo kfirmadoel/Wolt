@@ -19,15 +19,14 @@ void FileStorage::loadAllEvents(UsersData& data) {
         // Check if the line containes ':' mean its in a fix format
         if (line.find(':') != std::string::npos) {
             std::istringstream ss(line);
-            int userId;
-            char colon;
-            ss >> userId >> colon;
+            std::string userId;
+            std::getline(ss, userId, ':');
 
             if (!data.isUserExists(userId)) {
                 data.createUser(userId);
             }
 
-            int productId;
+            std::string productId;
             while (ss >> productId) {
                 data.addProduct(userId, productId);
             }
@@ -35,8 +34,7 @@ void FileStorage::loadAllEvents(UsersData& data) {
         else {
             //Check if the line contains 'ADD' means we need to read the specific format
             std::istringstream ss(line);
-            int userId, productId;
-            std::string op;
+            std::string userId, op, productId;
 
             ss >> userId >> op >> productId;
 
@@ -51,7 +49,7 @@ void FileStorage::loadAllEvents(UsersData& data) {
 }
 
 
-void FileStorage::addProductWatched(int userId, int productId)
+void FileStorage::addProductWatched(const std::string& userId, const std::string& productId)
 {
     std::ofstream out(filename, std::ios::app);
     out << userId << " ADD " << productId << "\n";
@@ -66,12 +64,12 @@ void FileStorage::rewriteFormat(const UsersData &data)
 
     for (const auto &cell : allUsers)
     {
-        int userId = cell.first;
+        const std::string& userId = cell.first;
         const UserData &user = cell.second;
 
         out << userId << ":";
 
-        for (int product : user.getWatchedProducts())
+        for (const std::string& product : user.getWatchedProducts())
         {
             out << " " << product;
         }

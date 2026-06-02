@@ -1,26 +1,26 @@
 #include "UserData.h"
 
-UserData::UserData(int id) : userId(id) {}
+UserData::UserData(const std::string& id) : userId(id) {}
 
-UserData::UserData(int id, const std::set<int>& products)
+UserData::UserData(const std::string& id, const std::set<std::string>& products)
     : userId(id), watchedProducts(products) {}
 
-int UserData::getUserId() const {
+std::string UserData::getUserId() const {
     return userId;
 }
 
-const std::set<int>& UserData::getWatchedProducts() const {
+const std::set<std::string>& UserData::getWatchedProducts() const {
     return watchedProducts;
 }
 
-void UserData::addProducts(const std::set<int>& products) {
+void UserData::addProducts(const std::set<std::string>& products) {
     watchedProducts.insert(products.begin(), products.end());
 }
 
-void UserData::addProduct(int productId) {
+void UserData::addProduct(const std::string& productId) {
     watchedProducts.insert(productId);
 }
 
-bool UserData::hasProductWatched(int productId) const noexcept {
+bool UserData::hasProductWatched(const std::string& productId) const noexcept {
     return watchedProducts.count(productId) > 0;
 }

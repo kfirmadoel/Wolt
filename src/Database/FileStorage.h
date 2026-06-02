@@ -23,7 +23,7 @@ public:
      * @param userId user id
      * @param productId product id
      */
-    void addProductWatched(int userId, int productId) override;
+    void addProductWatched(const std::string& userId, const std::string& productId) override;
 
     /***
      * Rewrite the file at more readable format
