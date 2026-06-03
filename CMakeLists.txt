@@ -14,7 +14,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # --- Set include directories ---
-include_directories(src src/common src/Database src/core tests .)
+include_directories(src src/server src/common src/Database src/core tests .)
 
 # --- Glob all source files in the src directory ---
 file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp")
@@ -23,7 +23,7 @@ file(GLOB_RECURSE PROJECT_SOURCES "src/*.cpp")
 list(REMOVE_ITEM PROJECT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
 # --- Build the main application ---
-add_executable(wolt_app ${PROJECT_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+add_executable(server ${PROJECT_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
 # --- Build the test executable ---
 file(GLOB_RECURSE ALL_TESTS "tests/*.cpp")

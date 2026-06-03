@@ -1,0 +1,4 @@
+FROM python:3
+
+COPY . /usr/src/client
+WORKDIR /usr/src/client

@@ -13,10 +13,7 @@ RUN mkdir -p data
 # build the application
 RUN mkdir build
 WORKDIR /usr/src/wolt_project/build
-RUN cmake .. && make
+RUN cmake .. && make server
 
 # Set the working directory back to the project root for running the application
 WORKDIR /usr/src/wolt_project
-
-# Run the application
-CMD ["./build/wolt_app"]
