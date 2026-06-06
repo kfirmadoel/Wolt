@@ -35,3 +35,9 @@ void UsersRepository::addProductToUser(const std::string& userId, const std::str
     
     storage.addProductWatched(userId, productId);
 }
+
+ 
+void UsersRepository::removeProductFromUser(const std::string& userId, const std::string& productId) {
+    users.removeProduct(userId, productId);
+    storage.rewriteFormat(users);
+}

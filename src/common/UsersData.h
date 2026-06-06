@@ -40,6 +40,14 @@ public:
      */
     void addProduct(const std::string& userId, const std::string& productId);
 
+    /**
+     * Removes a product from a user's watched list.
+     * @param userId user id
+     * @param productId product to remove
+     */
+    void removeProduct(const std::string& userId, const std::string& productId);
+ 
+
 private:
     /**
      * All the users data

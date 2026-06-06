@@ -1,6 +1,4 @@
-#ifndef USERDATA_H
-#define USERDATA_H
-
+#pragma once
 #include <set>
 #include <string>
 
@@ -52,6 +50,13 @@ public:
      */
     void addProduct(const std::string& productId);
 
+     /**
+     * Removes a product from the watched list.
+     * Does nothing if the product was not watched.
+     * @param productId product to remove
+     */
+    void removeProduct(const std::string& productId);
+
     /**
      * Checks if the user has watched the product
      * @param productId product id
@@ -63,12 +68,10 @@ private:
     /**
      * User id
      */
-    std::string userId; // הורדנו את ה-1- כי string ריק מספיק כברירת מחדל
+    std::string userId;
 
     /**
      * Set of watched products by the user
      */
     std::set<std::string> watchedProducts;
 };
-
-#endif
