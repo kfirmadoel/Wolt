@@ -11,25 +11,24 @@ and provides intelligent suggestions based on user behavior.
 
 ## How to Run
 
-### Build
+### Run the full app (Server + Client)
 ```bash
-docker build -t wolt_app .
+docker-compose up --build
 ```
-
-### Run the app
-```bash
-# Linux/Mac
-docker run -it -v $(pwd)/data:/usr/src/wolt_project/data wolt_app
-
-# Windows (PowerShell)
-docker run -it -v ${PWD}/data:/usr/src/wolt_project/data wolt_app
-```
-
-
 
 ### Run the tests
 ```bash
-docker run -it wolt_app ./build/wolt_tests
+docker-compose up --build tests
+```
+
+### Run the server only (for debugging)
+```bash
+docker-compose up --build server
+```
+
+### Stop the app
+```bash
+docker-compose down
 ```
 
 ## Example Run
