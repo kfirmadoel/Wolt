@@ -3,5 +3,5 @@
 class ICommand {
 public:
     virtual ~ICommand() = default;    
-    virtual void execute(const std::string& args) = 0;
+    virtual std::string execute(const std::string& args) = 0;
 };

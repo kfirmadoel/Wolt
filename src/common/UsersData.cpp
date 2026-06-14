@@ -20,3 +20,7 @@ void UsersData::createUser(const std::string& userId) {
 void UsersData::addProduct(const std::string& userId, const std::string& productId) {
     data[userId].addProduct(productId);
 }
+
+void UsersData::removeProduct(const std::string& userId, const std::string& productId) {
+    data[userId].removeProduct(productId);
+}

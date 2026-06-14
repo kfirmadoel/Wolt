@@ -37,17 +37,24 @@ public:
     const std::map<std::string, UserData>& getAllUsers() const;
 
     /**
-     * Adds a product to a user by user id
+     * Adds a product to a user by user id and create the user if they don't exist.
      * @param userId user id
      * @param productId product id
      */
     void addProductToUser(const std::string& userId, const std::string& productId);
+    
     /**
-     * Creates a new user
+     * Creates a new user and do nothing if the user already exists.
      * @param userId user id
      */
     void createUser(const std::string& userId);
 
+     /**
+     * Removes a product from a user's watched list.
+     * @param userId user id
+     * @param productId product id
+     */
+    void removeProductFromUser(const std::string& userId, const std::string& productId);
 private:
     /**
      * All the users data

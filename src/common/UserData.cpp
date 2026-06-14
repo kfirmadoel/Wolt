@@ -21,6 +21,10 @@ void UserData::addProduct(const std::string& productId) {
     watchedProducts.insert(productId);
 }
 
+void UserData::removeProduct(const std::string& productId) {
+    watchedProducts.erase(productId);
+}
+
 bool UserData::hasProductWatched(const std::string& productId) const noexcept {
     return watchedProducts.count(productId) > 0;
 }
