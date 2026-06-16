@@ -8,9 +8,10 @@
 
 TcpServer::TcpServer(int port, App &app) : port(port), app(app) {}
 
-void TcpServer::handleClient(int clientSock)
-{
+void TcpServer::handleClient(int clientSock){
     char buffer[4096];
+    //save in buffer
+    std::string clientBuffer = "";
 
     while (true)
     {
@@ -25,14 +26,28 @@ void TcpServer::handleClient(int clientSock)
             break;
         }
 
-        // A single recv may contain multiple newline-separated commands
-        std::string data(buffer, readBytes);
-        std::istringstream input(data);
-        std::string line;
-        std::string fullResponse;
+        // 1. Append the newly read data to the accumulated buffer
+        clientBuffer.append(buffer, readBytes);
 
-        while (std::getline(input, line))
+        std::string fullResponse;
+        size_t pos;
+
+        // 2. As long as there is a newline character in the buffer, extract and process the full line
+        while ((pos = clientBuffer.find('\n')) != std::string::npos)
         {
+            // Extract the line (excluding the '\n' character)
+            std::string line = clientBuffer.substr(0, pos);
+
+            // Remove the processed line and the '\n' character from the buffer
+            clientBuffer.erase(0, pos + 1);
+
+            // Handle \r\n (Carriage Return + Line Feed) often sent by Windows/Telnet clients
+            if (!line.empty() && line.back() == '\r')
+            {
+                line.pop_back();
+            }
+
+            // Pass the complete line to the application logic
             std::string response = app.handleLine(line);
             if (!response.empty())
             {
@@ -40,6 +55,7 @@ void TcpServer::handleClient(int clientSock)
             }
         }
 
+        // 3. Send back the collected responses (if any)
         if (!fullResponse.empty())
         {
             send(clientSock, fullResponse.c_str(), fullResponse.length(), 0);

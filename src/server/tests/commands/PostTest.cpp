@@ -1,8 +1,8 @@
 // addTest.cpp
 #include <gtest/gtest.h>
-#include "AddCommand.h"
-#include "FileStorage.h"
-#include "UsersRepository.h"
+#include "commands/PostCommand.h"
+#include "Database/FileStorage.h"
+#include "Database/UsersRepository.h"
 #include <cstdio>
 #include <set>
 #include <string>

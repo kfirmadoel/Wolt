@@ -1,8 +1,8 @@
 // reccomendTest.cpp
 #include <gtest/gtest.h>
-#include "RecommendCommand.h"
-#include "FileStorage.h"
-#include "UsersRepository.h"
+#include "commands/GetCommand.h"
+#include "Database/FileStorage.h"
+#include "Database/UsersRepository.h"
 #include <cstdio>
 #include <set>
 #include <string>

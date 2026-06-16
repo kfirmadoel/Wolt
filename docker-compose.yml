@@ -3,7 +3,7 @@ version: '3.8'
 services:
   server:
     build:
-      context: .
+      context: ./src/server
       dockerfile: Dockerfile.server
     volumes:
       - ./data:/usr/src/wolt_project/data
@@ -13,7 +13,7 @@ services:
 
   client:
     build:
-      context: ./client
+      context: ./src/client
       dockerfile: Dockerfile.client
     depends_on:
       - server
@@ -23,6 +23,6 @@ services:
 
   tests:
     build:
-      context: .
+      context: ./src/server
       dockerfile: Dockerfile.server
     command: sh -c "cd build && make wolt_tests && ./wolt_tests"

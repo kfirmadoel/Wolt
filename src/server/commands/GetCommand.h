@@ -1,6 +1,6 @@
 #pragma once
-#include "ICommand.h"
-#include "../Database/UsersRepository.h"
+#include "core/ICommand.h"
+#include "Database/UsersRepository.h"
 #include <string>
 #include <map>
 #include "Status.h"
