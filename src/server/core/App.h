@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include "ICommand.h"
-#include "../commands/Status.h"
+#include "commands/Status.h"
 
 
 class App {

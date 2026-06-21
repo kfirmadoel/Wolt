@@ -1,7 +1,7 @@
 #ifndef USERSREPOSITORY_H
 #define USERSREPOSITORY_H
 
-#include "UsersData.h"
+#include "common/UsersData.h"
 #include "IDataStorage.h"
 #include <string>
 #include <map>

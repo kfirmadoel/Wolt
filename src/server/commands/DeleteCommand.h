@@ -1,9 +1,8 @@
 #pragma once
-#include "ICommand.h"
-#include "../Database/UsersRepository.h"
+#include "core/ICommand.h"
+#include "Database/UsersRepository.h"
 #include <string>
-#include "Status.h"
-
+#include "commands/Status.h"
 /**
  * Handles the DELETE command.
  * Removes watched products from an existing user.

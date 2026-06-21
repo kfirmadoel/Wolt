@@ -1,7 +1,7 @@
 #pragma once
-#include "ICommand.h"
+#include "core/ICommand.h"
 #include <string>
-#include "../commands/Status.h"
+#include "commands/Status.h"
 
 class HelpCommand : public ICommand {
 public:

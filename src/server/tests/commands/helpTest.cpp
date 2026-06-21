@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "HelpCommand.h"
+#include "commands/HelpCommand.h"
 #include <string>
 
 class HelpCommandTest : public ::testing::Test {

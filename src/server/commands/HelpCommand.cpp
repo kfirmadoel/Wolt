@@ -19,7 +19,7 @@ std::string HelpCommand::execute(const std::string& args) {
         "DELETE, arguments: [userid] [productid1] [productid2] ...",
         "GET, arguments: [userid] [productid]",
         "PATCH, arguments: [userid] [productid1] [productid2] ...",
-        "POST, arguments: [userid]"
+        "POST, arguments: [userid] [productid1] [productid2] ..."
     };
 
     std::sort(cmds.begin(), cmds.end());

@@ -7,10 +7,10 @@
 #include "commands/PatchCommand.h"
 #include "commands/DeleteCommand.h"
 #include "commands/GetCommand.h"
-#include "core/HelpCommand.h"
+#include "commands/HelpCommand.h"
 #include "Database/FileStorage.h"
 #include "Database/UsersRepository.h"
-#include "server/TcpServer.h"
+#include "Tcp/TcpServer.h"
 
 using namespace std;
 
