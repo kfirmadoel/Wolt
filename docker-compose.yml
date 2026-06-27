@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile.server
+    volumes:
+      - ./data:/usr/src/wolt_project/data
+    ports:
+      - "5555:5555"
+    command: ./build/server 5555
+
+  client:
+    build:
+      context: ./src/client
+      dockerfile: Dockerfile.client
+    depends_on:
+      - server
+    stdin_open: true
+    tty: true
+    command: python3 TcpClient.py server 5555
+
+  tests:
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile.server
+    command: sh -c "cd build && make wolt_tests && ./wolt_tests"
