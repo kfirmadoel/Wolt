@@ -3,8 +3,8 @@
 #include <string>
 
 // Include the target classes from the Database directory
-#include "../Database/FileStorage.h"
-#include "../Database/UsersRepository.h"
+#include "Database/FileStorage.h"
+#include "Database/UsersRepository.h"
 
 // Test Fixture to ensure a clean environment for each test case
 class DatabaseTest : public ::testing::Test {

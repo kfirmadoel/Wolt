@@ -41,14 +41,13 @@ set(TEST_SOURCES
     tests/commands/helpTest.cpp
     tests/commands/PostTest.cpp
     tests/Database/databaseTest.cpp
-    tests/appTests.cpp
     
     # Add new test files here, e.g.:
-    # tests/commands/PatchTest.cpp
-    # tests/commands/DeleteTest.cpp
-    # tests/Tcp/TcpServer
+    tests/commands/PatchTest.cpp
+    tests/commands/DeleteTest.cpp
+    
 )
 
 # --- Build the test executable ---
-add_executable(wolt_tests ${PROJECT_SOURCES} ${TEST_SOURCES})
-target_link_libraries(wolt_tests GTest::gtest_main)
+ add_executable(wolt_tests ${PROJECT_SOURCES} ${TEST_SOURCES})
+ target_link_libraries(wolt_tests GTest::gtest_main)

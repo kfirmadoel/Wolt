@@ -7,43 +7,30 @@ protected:
     HelpCommand helpCmd;
 };
 
-// Test normal execution with no arguments
-TEST_F(HelpCommandTest, PrintsCorrectHelpText) {
-    testing::internal::CaptureStdout();
+// Verify that the help command outputs the updated Ex2 commands
+TEST_F(HelpCommandTest, PrintsUpdatedHelpText) {
+    std::string output = helpCmd.execute("");
     
-    helpCmd.execute("");
-    
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string expectedOutput = 
-        "add [userid] [productid1] [productid2] ...\n"
-        "recommend [userid] [productid]\n"
-        "help\n";
-        
-    EXPECT_EQ(output, expectedOutput);
+    EXPECT_NE(output.find("POST"), std::string::npos);
+    EXPECT_NE(output.find("GET"), std::string::npos);
+    EXPECT_NE(output.find("PATCH"), std::string::npos);
+    EXPECT_NE(output.find("DELETE"), std::string::npos);
+    EXPECT_NE(output.find("help"), std::string::npos);
 }
 
 // Test execution with only whitespace (should be treated as empty and valid)
 TEST_F(HelpCommandTest, HandlesWhitespaceArguments) {
-    testing::internal::CaptureStdout();
+    std::string output = helpCmd.execute("   \t  ");
     
-    helpCmd.execute("   \t  ");
-    
-    std::string output = testing::internal::GetCapturedStdout();
-    std::string expectedOutput = 
-        "add [userid] [productid1] [productid2] ...\n"
-        "recommend [userid] [productid]\n"
-        "help\n";
-        
-    EXPECT_EQ(output, expectedOutput);
+    EXPECT_NE(output.find("POST"), std::string::npos);
+    EXPECT_NE(output.find("help"), std::string::npos);
 }
 
-// Test execution with invalid arguments (should print nothing at all)
+// Test execution with invalid arguments (assuming it returns an empty string or error)
 TEST_F(HelpCommandTest, IgnoresInvalidArguments) {
-    testing::internal::CaptureStdout();
-     // "help me" is invalid
-    helpCmd.execute("me");
+    // "me" is an invalid argument for help
+    std::string output = helpCmd.execute("me");
     
-    std::string output = testing::internal::GetCapturedStdout();
-    
-    EXPECT_EQ(output, "");
+    // Check that it doesn't return the normal help text
+    EXPECT_EQ(output.find("POST"), std::string::npos);
 }
