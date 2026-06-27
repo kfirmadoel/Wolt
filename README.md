@@ -43,9 +43,7 @@ docker-compose up --build tests
 docker-compose down
 ```
 
-## Example Run
-```
-```
+
 ## Open/Closed Principle
 
 **1. Did the fact that the command names changed and added require you to modify code that is supposed to be 'closed for modification but open for extension'?**  
