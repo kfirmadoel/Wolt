@@ -29,3 +29,4 @@ module.exports = {
     getOrders: () => orders,
     addOrder: (order) => orders.push(order)
 };
+
