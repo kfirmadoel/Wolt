@@ -15,11 +15,9 @@ services:
     build:
       context: ./src/client
       dockerfile: Dockerfile.client
-    depends_on:
-      - server
+    network_mode: host
     stdin_open: true
     tty: true
-    command: python3 TcpClient.py server 5555
 
   tests:
     build:
