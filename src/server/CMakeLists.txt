@@ -41,8 +41,6 @@ set(TEST_SOURCES
     tests/commands/helpTest.cpp
     tests/commands/PostTest.cpp
     tests/Database/databaseTest.cpp
-    
-    # Add new test files here, e.g.:
     tests/commands/PatchTest.cpp
     tests/commands/DeleteTest.cpp
     

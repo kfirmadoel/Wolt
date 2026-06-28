@@ -41,9 +41,11 @@ Run the following command in the root directory to build and start the C++ serve
 *The server will start listening for connections on port 5555.*
 
 ### 2. Run the Client
-Open a new terminal window and run the Python client, providing the server IP and port:
-> python src/client/TcpClient.py 127.0.0.1 5555
+Open a new terminal window and run the Python client:
+> docker-compose run --build client 127.0.0.1 5555
+
+*The client will connect on port 5555 and IP 127.0.0.1*
 
 ### 3. Run the Unit Tests (TDD)
 To execute the Google Test suite for the server logic:
-> docker-compose up --build testsr
+> docker-compose up --build tests
