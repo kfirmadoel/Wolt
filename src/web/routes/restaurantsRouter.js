@@ -2,11 +2,18 @@
 const express = require('express');
 const router = express.Router();
 const restaurantsController = require('../controllers/restaurantsController');
+const productRouter = require('./productRouter');
 
-router.get('/', restaurantsController.getAllRestaurants);
-router.post('/', restaurantsController.createRestaurant);
-router.get('/:id', restaurantsController.getRestaurantById);
-router.patch('/:id', restaurantsController.updateRestaurant);
-router.delete('/:id', restaurantsController.deleteRestaurant);
+// check if the reataurant exist.
+router.use('/:id/products', productRouter)
+
+router.route('/')
+    .get(restaurantsController.getAllRestaurants)
+    .post(restaurantsController.createRestaurant);
+    
+router.route('/:id')
+    .get(restaurantsController.getRestaurantById)
+    .patch(restaurantsController.updateRestaurant)
+    .delete(restaurantsController.deleteRestaurant);
 
 module.exports = router;

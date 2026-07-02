@@ -5,28 +5,63 @@
 const users = [];
 const restaurants = [];
 const orders = [];
+const products = [];
 
-module.exports = {
-    // --- User Management ---
-    getUsers: () => users,
-    addUser: (user) => users.push(user),
-    getUserById: (id) => users.find(u => u.id === id),
+// --- User Management ---
+const getUsers = () => users;
+const addUser = (user) => users.push(user);
+const getUserById = (id) => users.find(u => u.id === id);
+const getUserByUsername = (username) => users.find(u => u.username === username);
 
-    // --- Restaurant Management ---
-    getRestaurants: () => restaurants,
-    addRestaurant: (restaurant) => restaurants.push(restaurant),
-    getRestaurantById: (id) => restaurants.find(r => r.id === id),
-    deleteRestaurant: (id) => {
-        const index = restaurants.findIndex(r => r.id === id);
-        if (index !== -1) {
-            restaurants.splice(index, 1);
-            return true; // Successfully deleted
-        }
-        return false; // Not found
-    },
-
-    // --- Order Management (Infrastructure for DevOps/Orders epic) ---
-    getOrders: () => orders,
-    addOrder: (order) => orders.push(order)
+// --- Restaurant Management ---
+const getRestaurants = () => restaurants;
+const addRestaurant = (restaurant) => restaurants.push(restaurant);
+const getRestaurantById = (id) => restaurants.find(r => r.id === id);
+const deleteRestaurant = (id) => {
+    const index = restaurants.findIndex(r => r.id === id);
+    if (index !== -1) {
+        restaurants.splice(index, 1);
+        return true;
+    }
+    return false;
 };
 
+// --- Product Management ---
+const getProducts = () => products;
+const addProduct = (product) => products.push(product);
+const getProductById = (id) => products.find(p => p.id === id);
+const getProductsByRestaurantId = (restaurantId) => products.filter(p => p.restaurantId === restaurantId);
+const getProductByRestaurantAndId = (pId, restaurantId) => products.find(p => p.id === pId && p.restaurantId === restaurantId);
+const deleteProduct = (id) => {
+    const index = products.findIndex(p => p.id === id);
+    if (index !== -1) {
+        products.splice(index, 1);
+        return true;
+    }
+    return false;
+};
+
+// --- Order Management ---
+const getOrders = () => orders;
+const addOrder = (order) => orders.push(order);
+const getOrderById = (id) => orders.find(o => o.id === id);
+const getOrdersByUserId = (userId) => orders.filter(o => o.userId === userId);
+const deleteOrder = (id) => {
+    const index = orders.findIndex(o => o.id === id);
+    if (index !== -1) {
+        orders.splice(index, 1);
+        return true;
+    }
+    return false;
+};
+
+module.exports = {
+    // Users
+    getUsers, addUser, getUserById, getUserByUsername,
+    // Restaurants
+    getRestaurants, addRestaurant, getRestaurantById, deleteRestaurant,
+    // Products
+    getProducts, addProduct, getProductById, getProductsByRestaurantId, getProductByRestaurantAndId, deleteProduct,
+    // Orders
+    getOrders, addOrder, getOrderById, getOrdersByUserId, deleteOrder
+};

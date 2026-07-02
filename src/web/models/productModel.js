@@ -1,0 +1,47 @@
+const db = require('../database');
+
+const getById = (pId, restaurantId) => {
+    return db.getProductByRestaurantAndId(pId, restaurantId);
+};
+
+const getAllByRestaurant = (restaurantId) => {
+    return db.getProductsByRestaurantId(restaurantId);
+};
+
+const create = (restaurantId, data) => {
+    const product = {
+        id: 'prod_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        restaurantId,
+        name: data.name,
+        description: data.description || "",
+        price: data.price,
+    };
+    db.addProduct(product);
+    return product;
+};
+
+const updateProduct = (pId, restaurantId, data) => {
+    const product = db.getProductByRestaurantAndId(pId, restaurantId);
+    if (!product) return null;
+    
+    product.name = data.name ?? product.name;
+    product.description = data.description ?? product.description;
+    product.price = data.price ?? product.price;
+    
+    return product;
+}
+
+const deleteProduct = (pId, restaurantId) => {
+    const product = db.getProductByRestaurantAndId(pId, restaurantId);
+    if (!product) return null;
+    
+    return db.deleteProduct(pId);
+};
+
+module.exports = {
+    getById,
+    getAllByRestaurant,
+    create,
+    updateProduct,
+    deleteProduct
+};
