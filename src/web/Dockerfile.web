@@ -1,0 +1,25 @@
+# Use official Node.js runtime as a parent image
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /usr/src/wolt_project
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy the necessary application files
+# Only copy the web server code, not the entire project
+COPY . .
+
+# Expose the port that the Node.js server will listen on
+EXPOSE 3000
+
+# Health check to ensure the server is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Run the Node.js application
+CMD ["node", "src/web/index.js"]

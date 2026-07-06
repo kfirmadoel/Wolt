@@ -16,7 +16,14 @@ app.use('/api/search', searchRouter);
 // Token endpoint is standalone, mapped directly to the controller
 app.post('/api/tokens', usersController.loginUser);
 
+// Health check endpoint for Docker and monitoring
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const HOST = '0.0.0.0'; // Listen on all network interfaces for Docker
+
+app.listen(PORT, HOST, () => {
+    console.log(`Server is running on ${HOST}:${PORT}`);
 });
