@@ -43,7 +43,8 @@ set(TEST_SOURCES
     tests/Database/databaseTest.cpp
     tests/commands/PatchTest.cpp
     tests/commands/DeleteTest.cpp
-    
+    tests/appIntegrationTest.cpp
+    tests/tcpServerIntegrationTest.cpp
 )
 
 # --- Build the test executable ---

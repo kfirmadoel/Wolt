@@ -9,13 +9,13 @@ private:
     // The application to handle requests
     App &app;
 
+public:
     /**
      * Handles a single connected client until it disconnects.
      * @param clientSock the connected client socket fd
      */
     void handleClient(int clientSock);
 
-public:
     /**
      * Constructor for TcpServer
      * @param port the port to listen on

@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Define an internal network for inter-service communication
 networks:
   wolt-network:
@@ -21,9 +19,13 @@ services:
     command: ./build/server 12345
     # Health check to ensure server is ready
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "12345"]
-      interval: 10s
-      timeout: 5s
+      test:
+        - CMD
+        - python3
+        - -c
+        - import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 12345)); s.close()
+      interval: 5s
+      timeout: 3s
       retries: 5
       start_period: 10s
 
@@ -45,7 +47,11 @@ services:
       - CPP_SERVER_PORT=12345
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:3000/api/health
       interval: 10s
       timeout: 5s
       retries: 5
@@ -67,13 +73,3 @@ services:
     environment:
       - CPP_SERVER_HOST=cpp-server
       - CPP_SERVER_PORT=12345
-
-  # Tests - Runs C++ tests
-  tests:
-    build:
-      context: ./src/server
-      dockerfile: Dockerfile.server
-    container_name: tests
-    networks:
-      - wolt-network
-    command: sh -c "cd build && make wolt_tests && ./wolt_tests"

@@ -12,6 +12,9 @@ const net = require('net');
  * @param {number} port - The port number of the C++ server
  * @returns {Promise<string>} - A promise that resolves with the server response
  */
+const DEFAULT_CPP_HOST = process.env.CPP_SERVER_HOST || 'cpp-server';
+const DEFAULT_CPP_PORT = parseInt(process.env.CPP_SERVER_PORT, 10) || 12345;
+
 function sendCommandToCppServer(command, host, port) {
     return new Promise((resolve, reject) => {
         const socket = new net.Socket();
@@ -73,7 +76,7 @@ function sendCommandToCppServer(command, host, port) {
  * @param {number} port - The port number of the C++ server (default: 12345)
  * @returns {Promise<boolean>} - A promise that resolves to true if successful
  */
-async function recordProductView(userId, productId, host = 'cpp-server', port = 12345) {
+async function recordProductView(userId, productId, host = DEFAULT_CPP_HOST, port = DEFAULT_CPP_PORT) {
     try {
         // The GET command format: "get <userId> <productId>"
         // This tells the C++ server to record that the user viewed the product
@@ -110,7 +113,7 @@ async function recordProductView(userId, productId, host = 'cpp-server', port = 
  * @param {number} port - The port number of the C++ server (default: 12345)
  * @returns {Promise<Array>} - A promise that resolves to an array of recommended product IDs
  */
-async function getRecommendations(userId, productId, host = 'cpp-server', port = 12345) {
+async function getRecommendations(userId, productId, host = DEFAULT_CPP_HOST, port = DEFAULT_CPP_PORT) {
     try {
         const command = `get ${userId} ${productId}`;
         const response = await sendCommandToCppServer(command, host, port);
