@@ -5,13 +5,13 @@ networks:
 
 services:
   # C++ Server - Acts as a TCP server for user product tracking
-  cpp-server:
+  server:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
     container_name: cpp-server
-    ports:
-      - "12345:12345"
+    expose:
+      - "12345"
     volumes:
       - ./data:/usr/src/wolt_project/data
     networks:
@@ -40,10 +40,10 @@ services:
     networks:
       - wolt-network
     depends_on:
-      cpp-server:
+      server:
         condition: service_healthy
     environment:
-      - CPP_SERVER_HOST=cpp-server
+      - CPP_SERVER_HOST=server
       - CPP_SERVER_PORT=12345
     # Health check
     healthcheck:
@@ -66,10 +66,39 @@ services:
     networks:
       - wolt-network
     depends_on:
-      cpp-server:
+      server:
         condition: service_healthy
     stdin_open: true
     tty: true
     environment:
-      - CPP_SERVER_HOST=cpp-server
+      - CPP_SERVER_HOST=server
+      - CPP_SERVER_PORT=12345
+
+  tests:
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile.server
+    container_name: wolt-tests
+    networks:
+      - wolt-network
+    command: ctest --test-dir /usr/src/wolt_project/build --output-on-failure
+    depends_on:
+      server:
+        condition: service_healthy
+
+  web-tests:
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile.web
+    container_name: web-tests
+    profiles:
+      - tests
+    networks:
+      - wolt-network
+    depends_on:
+      server:
+        condition: service_healthy
+    command: npm test
+    environment:
+      - CPP_SERVER_HOST=server
       - CPP_SERVER_PORT=12345

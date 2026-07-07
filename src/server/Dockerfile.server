@@ -13,10 +13,10 @@ EXPOSE 12345
 # create data directory for the application to use
 RUN mkdir -p data
 
-# build the application
+# build the application and tests
 RUN mkdir build
 WORKDIR /usr/src/wolt_project/build
-RUN cmake .. && make server
+RUN cmake .. && make server wolt_unit_tests wolt_integration_tests wolt_project_tests
 
 # Set the working directory back to the project root for running the application
 WORKDIR /usr/src/wolt_project
