@@ -7,6 +7,7 @@ const restaurants = [];
 const orders = [];
 const products = [];
 
+
 // --- User Management ---
 const getUsers = () => users;
 const addUser = (user) => users.push(user);

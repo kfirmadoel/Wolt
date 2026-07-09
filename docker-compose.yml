@@ -1,35 +1,32 @@
-# Define an internal network for inter-service communication
 networks:
   wolt-network:
     driver: bridge
 
 services:
-  # C++ Server - Acts as a TCP server for user product tracking
-  server:
+  # ============================
+  # C++ SERVER
+  # ============================
+  cpp-server:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
     container_name: cpp-server
-    expose:
-      - "12345"
-    volumes:
-      - ./data:/usr/src/wolt_project/data
     networks:
       - wolt-network
+    expose:
+      - "12345"
     command: ./build/server 12345
-    # Health check to ensure server is ready
+    profiles: ["dev", "api", "full", "unit"]
     healthcheck:
-      test:
-        - CMD
-        - python3
-        - -c
-        - import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 12345)); s.close()
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/12345"]
       interval: 5s
       timeout: 3s
       retries: 5
       start_period: 10s
 
-  # Node.js Web Server - Communicates with C++ server via TCP
+  # ============================
+  # NODE.JS WEB SERVER
+  # ============================
   web-server:
     build:
       context: ./src/web
@@ -40,65 +37,47 @@ services:
     networks:
       - wolt-network
     depends_on:
-      server:
+      cpp-server:
         condition: service_healthy
     environment:
-      - CPP_SERVER_HOST=server
+      - CPP_SERVER_HOST=cpp-server
       - CPP_SERVER_PORT=12345
-    # Health check
-    healthcheck:
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:3000/api/health
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+    profiles: ["dev", "api", "full"]
 
-  # Python Client - For testing and interaction
-  client:
-    build:
-      context: ./src/client
-      dockerfile: Dockerfile.client
-    container_name: client
-    networks:
-      - wolt-network
-    depends_on:
-      server:
-        condition: service_healthy
-    stdin_open: true
-    tty: true
-    environment:
-      - CPP_SERVER_HOST=server
-      - CPP_SERVER_PORT=12345
-
-  tests:
+  # ============================
+  # C++ TESTS
+  # ============================
+  cpp-tests:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
-    container_name: wolt-tests
+    container_name: cpp-tests
     networks:
       - wolt-network
-    command: ctest --test-dir /usr/src/wolt_project/build --output-on-failure
     depends_on:
-      server:
+      cpp-server:
         condition: service_healthy
+    command: sh -c "cd build && make wolt_tests && ./wolt_tests"
+    profiles: ["unit", "full"]
 
-  web-tests:
+
+  # ============================
+  # API TESTS (SUPERTEST)
+  # ============================
+  api-tests:
     build:
       context: ./src/web
       dockerfile: Dockerfile.web
-    container_name: web-tests
-    profiles:
-      - tests
+    container_name: api-tests
     networks:
       - wolt-network
     depends_on:
-      server:
+      web-server:
         condition: service_healthy
-    command: npm test
+      cpp-server:
+        condition: service_healthy
+    command: npm test -- tests/api/**/*.test.js
     environment:
-      - CPP_SERVER_HOST=server
+      - CPP_SERVER_HOST=cpp-server
       - CPP_SERVER_PORT=12345
+    profiles: ["api", "full"]

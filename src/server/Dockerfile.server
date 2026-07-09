@@ -7,16 +7,13 @@ RUN apt-get update && apt-get install -y cmake
 COPY . /usr/src/wolt_project
 WORKDIR /usr/src/wolt_project
 
-# Expose the C++ server port for Docker networking
-EXPOSE 12345
-
 # create data directory for the application to use
 RUN mkdir -p data
 
-# build the application and tests
+# build the application
 RUN mkdir build
 WORKDIR /usr/src/wolt_project/build
-RUN cmake .. && make server wolt_unit_tests wolt_integration_tests wolt_project_tests
+RUN cmake .. && make server
 
 # Set the working directory back to the project root for running the application
 WORKDIR /usr/src/wolt_project

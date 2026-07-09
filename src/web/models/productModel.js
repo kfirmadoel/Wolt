@@ -14,7 +14,8 @@ const create = (restaurantId, data) => {
         restaurantId,
         name: data.name,
         description: data.description || "",
-        price: data.price,
+        // Ensure price is stored as a number (accept numeric strings)
+        price: Number(data.price),
     };
     db.addProduct(product);
     return product;
@@ -26,7 +27,7 @@ const updateProduct = (pId, restaurantId, data) => {
     
     product.name = data.name ?? product.name;
     product.description = data.description ?? product.description;
-    product.price = data.price ?? product.price;
+    product.price = data.price !== undefined ? Number(data.price) : product.price;
     
     return product;
 }
