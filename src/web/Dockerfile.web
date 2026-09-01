@@ -1,0 +1,27 @@
+# Use official Node.js as image
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /usr/src/wolt_project
+
+# Copy packages
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Only copy the web server code, not the entire project
+COPY . .
+
+# Expose the port that the Node.js server will listen on
+EXPOSE 3000
+
+# Health check to ensure the server is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Allow running in normal server mode or test mode via `TEST_MODE` env var.
+# - Default: run the server
+# - Set `TEST_MODE=true` to run `npm test` inside the image
+CMD ["sh", "-c", "if [ \"$TEST_MODE\" = \"true\" ]; then npm test; else node index.js; fi"]
+

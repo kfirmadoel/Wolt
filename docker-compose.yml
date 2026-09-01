@@ -1,26 +1,83 @@
-version: '3.8'
+networks:
+  wolt-network:
+    driver: bridge
 
 services:
-  server:
+  # ============================
+  # C++ SERVER
+  # ============================
+  cpp-server:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
-    volumes:
-      - ./data:/usr/src/wolt_project/data
+    container_name: cpp-server
+    networks:
+      - wolt-network
+    expose:
+      - "12345"
+    command: ./build/server 12345
+    profiles: ["dev", "api", "full", "unit"]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/12345"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  # ============================
+  # NODE.JS WEB SERVER
+  # ============================
+  web-server:
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile.web
+    container_name: web-server
     ports:
-      - "5555:5555"
-    command: ./build/server 5555
+      - "3000:3000"
+    networks:
+      - wolt-network
+    depends_on:
+      cpp-server:
+        condition: service_healthy
+    environment:
+      - CPP_SERVER_HOST=cpp-server
+      - CPP_SERVER_PORT=12345
+    profiles: ["dev", "api", "full"]
 
-  client:
-    build:
-      context: ./src/client
-      dockerfile: Dockerfile.client
-    network_mode: host
-    stdin_open: true
-    tty: true
-
-  tests:
+  # ============================
+  # C++ TESTS
+  # ============================
+  cpp-tests:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
+    container_name: cpp-tests
+    networks:
+      - wolt-network
+    depends_on:
+      cpp-server:
+        condition: service_healthy
     command: sh -c "cd build && make wolt_tests && ./wolt_tests"
+    profiles: ["unit", "full"]
+
+
+  # ============================
+  # API TESTS (SUPERTEST)
+  # ============================
+  api-tests:
+    build:
+      context: ./src/web
+      dockerfile: Dockerfile.web
+    container_name: api-tests
+    networks:
+      - wolt-network
+    depends_on:
+      web-server:
+        condition: service_healthy
+      cpp-server:
+        condition: service_healthy
+    command: npm test -- tests/api/**/*.test.js
+    environment:
+      - CPP_SERVER_HOST=cpp-server
+      - CPP_SERVER_PORT=12345
+    profiles: ["api", "full"]
