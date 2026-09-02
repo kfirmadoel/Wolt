@@ -10,7 +10,11 @@ const createRestaurant = (req, res) => {
         return res.status(400).json({ error: "Name is required" });
     }
 
-    const newRestaurant = restaurantModel.create(req.body);
+    if (!req.body.location || typeof req.body.location.x !== "number" || typeof req.body.location.y !== "number") {
+        return res.status(400).json({ error: "Location with numeric x and y is required" });
+    }
+
+    const newRestaurant = restaurantModel.create(req.body, req.userId);
     
     res.status(201).location(`/api/restaurants/${newRestaurant.id}`).send();
 };

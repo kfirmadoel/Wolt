@@ -117,6 +117,7 @@ types
   - `id` (string) — unique user id (e.g. `user_161790...`)
   - `username` (string)
   - `password` (string)
+  - `role` (string)
   - `name` (string)
   - `phone` (string)
   - `address` (string)
