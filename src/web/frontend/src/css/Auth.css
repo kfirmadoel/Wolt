@@ -1,0 +1,11 @@
+.Auth-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.Auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+}
