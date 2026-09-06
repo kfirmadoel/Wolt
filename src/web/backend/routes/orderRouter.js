@@ -4,7 +4,7 @@ const ordersController = require ('../controllers/ordersController');
 const middleware = require ('../controllers/middlewares');
 
 // middleware that check if the order exist.
-router.use(middleware.verifyUser);
+router.use(middleware.requireAuth);
 
 router.route('/')
     .get(ordersController.getAllOrders)

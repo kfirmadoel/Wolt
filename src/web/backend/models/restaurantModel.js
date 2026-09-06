@@ -5,14 +5,19 @@ const getAll = () => db.getRestaurants();
 
 const getById = (id) => db.getRestaurantById(id);
 
-const create = (data) => {
+const create = (data,ownerId) => {
     const restaurant = {
         // That will promise unique id for everyone
         id: 'rest_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+        ownerId,
         name: data.name,
         description: data.description || "",
         address: data.address || "",
         phone: data.phone || "",
+        location: {
+            x: data.location.x,
+            y: data.location.y
+        }
     };
     db.addRestaurant(restaurant);
     return restaurant;

@@ -10,16 +10,21 @@ const create = (data) => {
         id: newId,
         username: data.username,
         password: data.password,
+        role: data.role,
         name: data.name || "",
         phone: data.phone || "",
-        address: data.address || ""
+        address: data.address || "",
+        picture: data.picture || ""
     };
     db.addUser(newUser);
     return newUser;
 };
 
 const getById = (id) => {
-    return db.getUserById(id);
+    const user = db.getUserById(id);
+    if (!user) return null;
+    const { password, phone, address, role, ...safeUser } = user;
+    return safeUser;
 };
 
 const authenticate = (username, password) => {

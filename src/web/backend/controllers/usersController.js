@@ -1,9 +1,15 @@
 // src/web/controllers/usersController.js
 const userModel = require('../models/userModel');
+const jwtService = require('../services/jwtService');
 
 const createUser = (req, res) => {
     if (!req.body.username || !req.body.password) {
         return res.status(400).json({ error: "Username and password are required" });
+    }
+    
+
+    if (!req.body.role || (req.body.role !== "customer" && req.body.role !== "restaurant_owner")) {
+        return res.status(400).json({ error: "Role must be either 'customer' or 'restaurant_owner'" });
     }
 
     const newUser = userModel.create(req.body);
@@ -31,8 +37,9 @@ const loginUser = (req, res) => {
     if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
     }
-    
-    res.status(200).json({ id: user.id });
+
+    const token = jwtService.signToken(user);
+    res.status(200).json({ token, id: user.id });
 };
 
 module.exports = {

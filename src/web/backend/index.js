@@ -1,5 +1,6 @@
 // src/web/index.js
 const express = require('express');
+const cors = require('cors')
 const usersRouter = require('./routes/usersRouter');
 const restaurantsRouter = require('./routes/restaurantsRouter');
 const searchRouter = require ('./routes/searchRouter');
@@ -7,6 +8,7 @@ const ordersRouter = require('./routes/orderRouter');
 const usersController = require('./controllers/usersController');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Mount routers to specific paths
