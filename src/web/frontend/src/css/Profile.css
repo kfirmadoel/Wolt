@@ -1,0 +1,224 @@
+/* src/css/Profile.css - Wolt Profile Page */
+
+.profile-page {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 20px 80px;
+}
+
+.profile-page h1 {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin: 0 0 28px;
+    letter-spacing: -0.5px;
+}
+
+/* User info card at the top */
+.profile-info-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--wolt-blue);
+    flex-shrink: 0;
+}
+
+.profile-avatar-placeholder-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--wolt-blue);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.profile-info-text h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.profile-info-text p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 4px;
+}
+
+.profile-role-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: var(--wolt-blue-soft);
+    color: var(--wolt-blue);
+    margin-top: 4px;
+    text-transform: capitalize;
+}
+
+/* Section card reused for Location and other sections */
+.profile-section-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.profile-section-card h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-section-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+    line-height: 1.5;
+}
+
+/* Current location display */
+.current-location-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background-color: var(--bg-subtle);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.location-not-set {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Coordinate input row */
+.location-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.location-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.location-input-group label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.location-input-group input[type="number"] {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.location-input-group input[type="number"]:focus {
+    outline: none;
+    border-color: var(--wolt-blue);
+    box-shadow: 0 0 0 3px var(--wolt-blue-glow);
+    background-color: var(--input-bg-focus);
+}
+
+.location-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    line-height: 1.4;
+}
+
+/* Action buttons */
+.profile-save-btn {
+    background-color: var(--wolt-blue);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 12px 24px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 3px 10px var(--wolt-blue-glow);
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.profile-save-btn:hover:not(:disabled) {
+    background-color: var(--wolt-blue-hover);
+    transform: translateY(-1px);
+}
+
+.profile-save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Success / error feedback */
+.profile-feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.profile-feedback.success {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #065f46;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.profile-feedback.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+[data-theme="dark"] .profile-feedback.success {
+    color: #6ee7b7;
+}
+
+[data-theme="dark"] .profile-feedback.error {
+    color: #fca5a5;
+}
+
