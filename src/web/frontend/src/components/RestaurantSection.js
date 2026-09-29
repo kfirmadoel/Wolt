@@ -3,7 +3,7 @@ import React from 'react';
 import RestaurantCard from './RestaurantCard';
 import '../css/RestaurantSection.css';
 
-function RestaurantSection({ title, icon, subtitle, restaurants, isPromoted = false, calculateDistance = false }) {
+function RestaurantSection({ title, icon, subtitle, restaurants, calculateDistance = false }) {
     if (!restaurants || restaurants.length === 0) {
         return null;
     }
@@ -26,7 +26,7 @@ function RestaurantSection({ title, icon, subtitle, restaurants, isPromoted = fa
                     <RestaurantCard
                         key={restaurant.id}
                         restaurant={restaurant}
-                        isPromoted={isPromoted || restaurant.isPromoted}
+                        isPromoted={restaurant.isPromoted === true}
                         distance={calculateDistance ? restaurant.calculatedDistance : undefined}
                     />
                 ))}

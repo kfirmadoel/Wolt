@@ -2,22 +2,30 @@
 import React, { useRef } from 'react';
 import '../css/CategoryFilter.css';
 
-const CATEGORIES = [
-    { id: 'all', label: 'All', icon: '🍽️' },
-    { id: 'burger', label: 'Burgers', icon: '🍔' },
-    { id: 'pizza', label: 'Pizza', icon: '🍕' },
-    { id: 'sushi', label: 'Sushi', icon: '🍣' },
-    { id: 'asian', label: 'Asian', icon: '🍜' },
-    { id: 'bakery', label: 'Bakery', icon: '🥐' },
-    { id: 'salad', label: 'Salads', icon: '🥗' },
-    { id: 'dessert', label: 'Desserts', icon: '🍰' },
-    { id: 'mexican', label: 'Mexican', icon: '🌮' },
-    { id: 'drinks', label: 'Drinks', icon: '🥤' },
-    { id: 'grocery', label: 'Grocery', icon: '🛒' }
-];
+export const CATEGORY_ICONS = {
+    All: '🍽️',
+    Burgers: '🍔',
+    Pizza: '🍕',
+    Sushi: '🍣',
+    Asian: '🍜',
+    Bakery: '🥐',
+    Salads: '🥗',
+    Desserts: '🍰',
+    Mexican: '🌮',
+    Drinks: '🥤',
+    Grocery: '🛒'
+};
 
-function CategoryFilter({ selectedCategory, onSelectCategory }) {
+function CategoryFilter({ categories = [], selectedCategory, onSelectCategory }) {
     const scrollContainerRef = useRef(null);
+    const categoryOptions = [
+        { id: 'all', label: 'All', icon: CATEGORY_ICONS.All },
+        ...categories.map((category) => ({
+            id: category,
+            label: category,
+            icon: CATEGORY_ICONS[category] || '🍽️'
+        }))
+    ];
 
     const scroll = (direction) => {
         if (scrollContainerRef.current) {
@@ -38,7 +46,7 @@ function CategoryFilter({ selectedCategory, onSelectCategory }) {
             </button>
 
             <div className="category-scroll-container" ref={scrollContainerRef}>
-                {CATEGORIES.map((cat) => {
+                {categoryOptions.map((cat) => {
                     const isActive = selectedCategory === cat.id;
                     return (
                         <button

@@ -1,7 +1,7 @@
 // src/pages/RestaurantDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../helper/config';
+import { apiFetch } from '../helper/api';
 import '../css/RestaurantSection.css';
 
 function RestaurantDetail() {
@@ -16,8 +16,8 @@ function RestaurantDetail() {
             setLoading(true);
             try {
                 const [restRes, prodRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/api/restaurants/${id}`),
-                    fetch(`${API_BASE_URL}/api/restaurants/${id}/products`)
+                    apiFetch(`/api/restaurants/${id}`),
+                    apiFetch(`/api/restaurants/${id}/products`)
                 ]);
 
                 if (!restRes.ok) {
@@ -76,15 +76,26 @@ function RestaurantDetail() {
                 boxShadow: 'var(--shadow-sm)',
                 marginBottom: '30px'
             }}>
+                {restaurant.picture && (
+                    <img
+                        src={restaurant.picture}
+                        alt={restaurant.name}
+                        style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }}
+                    />
+                )}
                 <h1 style={{ margin: '0 0 10px', fontSize: '2.2rem', fontWeight: 900 }}>{restaurant.name}</h1>
-                <p style={{ color: 'var(--text-secondary)', margin: '0 0 16px', fontSize: '1.05rem' }}>
-                    {restaurant.description || 'Quality food prepared with care.'}
-                </p>
-                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    <span>📍 {restaurant.address || 'Tel Aviv Area'}</span>
-                    {restaurant.phone && <span>📞 {restaurant.phone}</span>}
-                    <span>🚴 20–30 min delivery</span>
-                </div>
+                {restaurant.description && (
+                    <p style={{ color: 'var(--text-secondary)', margin: '0 0 16px', fontSize: '1.05rem' }}>
+                        {restaurant.description}
+                    </p>
+                )}
+                {(restaurant.address || restaurant.phone || restaurant.deliveryTime) && (
+                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                        {restaurant.address && <span>📍 {restaurant.address}</span>}
+                        {restaurant.phone && <span>📞 {restaurant.phone}</span>}
+                        {restaurant.deliveryTime && <span>🚴 {restaurant.deliveryTime}</span>}
+                    </div>
+                )}
             </div>
 
             <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '20px' }}>Menu Items</h2>

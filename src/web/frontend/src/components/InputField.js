@@ -1,7 +1,7 @@
 // src/components/InputField.js
 import React from 'react';
 
-function InputField({ type, placeholder, value, onChange, accept, children }) {
+function InputField({ type, placeholder, value, onChange, accept, required, children }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '8px' }}>
             <input
@@ -10,6 +10,7 @@ function InputField({ type, placeholder, value, onChange, accept, children }) {
                 value={value}
                 onChange={onChange}
                 accept={accept}
+                required={required}
             />
             {children}
         </div>

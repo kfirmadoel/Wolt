@@ -3,6 +3,8 @@ const db = require('../database');
 
 const getAll = () => db.getRestaurants();
 
+const getByOwner = (ownerId) => db.getRestaurants().filter((restaurant) => restaurant.ownerId === ownerId);
+
 const getById = (id) => db.getRestaurantById(id);
 
 const create = (data,ownerId) => {
@@ -14,6 +16,9 @@ const create = (data,ownerId) => {
         description: data.description || "",
         address: data.address || "",
         phone: data.phone || "",
+        category: typeof data.category === 'string' ? data.category.trim() : "",
+        isPromoted: data.isPromoted === true,
+        picture: data.picture,
         location: {
             x: data.location.x,
             y: data.location.y
@@ -30,14 +35,30 @@ const update = (id, data) => {
     restaurant.description = data.description ?? restaurant.description; 
     restaurant.address = data.address ?? restaurant.address;
     restaurant.phone = data.phone ?? restaurant.phone;
+    if (data.category !== undefined) {
+        restaurant.category = data.category.trim();
+    }
+    if (data.isPromoted !== undefined) {
+        restaurant.isPromoted = data.isPromoted;
+    }
+    if (data.picture !== undefined) {
+        restaurant.picture = data.picture;
+    }
+    if (data.location !== undefined) {
+        restaurant.location = { x: data.location.x, y: data.location.y };
+    }
     
     return restaurant;
 };
 
-const deleteRestaurant = (id) => db.deleteRestaurant(id);
+const deleteRestaurant = (id) => {
+    db.getProductsByRestaurantId(id).forEach((product) => db.deleteProduct(product.id));
+    return db.deleteRestaurant(id);
+};
 
 module.exports = {
     getAll,
+    getByOwner,
     getById,
     create,
     update,

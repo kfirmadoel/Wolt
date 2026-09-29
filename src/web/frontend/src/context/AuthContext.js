@@ -1,10 +1,12 @@
 // src/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { API_BASE_URL } from '../helper/config';
+import { useTheme } from './ThemeContext';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+    const { setLightTheme } = useTheme();
     const [token, setToken] = useState(() => localStorage.getItem('token'));
     const [userId, setUserId] = useState(() => localStorage.getItem('userId'));
     const [user, setUser] = useState(null);
@@ -28,10 +30,12 @@ export const AuthProvider = ({ children }) => {
             if (res.ok) {
                 const userData = await res.json();
                 setUser(userData);
-            } else {
-                if (res.status === 401 || res.status === 404) {
-                    setUser(null);
-                }
+            } else if (res.status === 401 || res.status === 403 || res.status === 404) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userId');
+                setToken(null);
+                setUserId(null);
+                setUser(null);
             }
         } catch (err) {
             console.error('Error fetching user profile:', err);
@@ -67,6 +71,7 @@ export const AuthProvider = ({ children }) => {
     }, [syncWithLocalStorage]);
 
     const login = async (newToken, newUserId) => {
+        setLightTheme();
         localStorage.setItem('token', newToken);
         localStorage.setItem('userId', newUserId);
         setToken(newToken);
@@ -76,6 +81,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        setLightTheme();
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         setToken(null);

@@ -1,7 +1,7 @@
 /* src/css/Profile.css - Wolt Profile Page */
 
 .profile-page {
-    max-width: 640px;
+    max-width: 960px;
     margin: 40px auto;
     padding: 0 20px 80px;
 }
@@ -12,6 +12,18 @@
     color: var(--text-primary);
     margin: 0 0 28px;
     letter-spacing: -0.5px;
+}
+
+.profile-back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.profile-back-link:hover {
+    color: var(--wolt-blue);
 }
 
 /* User info card at the top */
@@ -136,6 +148,215 @@
     gap: 6px;
 }
 
+.restaurant-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.restaurant-form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--input-text);
+    font: inherit;
+}
+
+.restaurant-form-control:focus {
+    outline: none;
+    border-color: var(--wolt-blue);
+    box-shadow: 0 0 0 3px var(--wolt-blue-glow);
+}
+
+.owner-restaurants-section {
+    margin-top: 24px;
+}
+
+.owner-empty-state {
+    margin: 12px 0;
+    color: var(--text-secondary);
+}
+
+.owner-restaurant-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+    margin: 16px 0 22px;
+}
+
+.owner-restaurant-option {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.owner-restaurant-option.selected {
+    border-color: var(--wolt-blue);
+    box-shadow: 0 0 0 2px var(--wolt-blue-glow);
+}
+
+.owner-restaurant-option img,
+.owner-restaurant-option > span:first-child {
+    grid-row: 1 / 3;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--bg-subtle);
+    font-size: 1.3rem;
+}
+
+.owner-restaurant-option > span:nth-child(2) {
+    overflow: hidden;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.owner-restaurant-option small {
+    color: var(--text-muted);
+}
+
+.owner-selected-restaurant {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.owner-selected-heading,
+.owner-action-row,
+.owner-menu-item,
+.owner-menu-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.owner-selected-heading {
+    margin-bottom: 14px;
+}
+
+.owner-selected-heading h4,
+.owner-menu-section h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+}
+
+.owner-view-link {
+    color: var(--wolt-blue);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.owner-secondary-btn,
+.owner-danger-btn {
+    padding: 9px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.owner-secondary-btn {
+    background: var(--bg-subtle);
+}
+
+.owner-danger-btn {
+    border-color: rgba(220, 38, 38, 0.25);
+    background: rgba(220, 38, 38, 0.08);
+    color: #b91c1c;
+}
+
+.owner-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+}
+
+.owner-wide-field {
+    grid-column: 1 / -1;
+}
+
+.owner-image-preview {
+    width: min(100%, 420px);
+    max-height: 220px;
+    object-fit: cover;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+}
+
+.owner-menu-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.owner-menu-list {
+    display: flex;
+    flex-direction: column;
+    margin: 12px 0 20px;
+}
+
+.owner-menu-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.owner-menu-item > div:first-child {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 4px 12px;
+    min-width: 0;
+}
+
+.owner-menu-item strong {
+    color: var(--text-primary);
+}
+
+.owner-menu-item span,
+.owner-menu-item p {
+    color: var(--text-secondary);
+}
+
+.owner-menu-item p {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 0.88rem;
+}
+
+.owner-product-form {
+    display: grid;
+    gap: 12px;
+    max-width: 560px;
+    margin-top: 18px;
+}
+
+.owner-product-form h5 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.98rem;
+}
+
+.owner-action-row .profile-save-btn {
+    width: auto;
+    flex: 1;
+}
+
 .location-input-group label {
     font-size: 0.82rem;
     font-weight: 700;
@@ -220,5 +441,24 @@
 
 [data-theme="dark"] .profile-feedback.error {
     color: #fca5a5;
+}
+
+@media (max-width: 600px) {
+    .owner-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .owner-wide-field {
+        grid-column: auto;
+    }
+
+    .owner-menu-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .owner-menu-actions {
+        width: 100%;
+    }
 }
 

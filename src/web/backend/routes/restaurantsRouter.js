@@ -7,6 +7,9 @@ const middleware = require('../controllers/middlewares');
 
 router.use('/:id/products', productRouter)
 
+router.get('/categories', restaurantsController.getRestaurantCategories);
+router.get('/mine', middleware.requireAuth, middleware.requireRole('restaurant_owner'), restaurantsController.getOwnedRestaurants);
+
 // Shared chain for routes that modify a restaurant that must already exist
 // and must belong to the logged-in owner.
 const requireOwnerAccess = [

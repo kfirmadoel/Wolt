@@ -143,6 +143,23 @@
     flex-shrink: 0;
 }
 
+.navbar-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.navbar-cart-btn:hover {
+    background-color: var(--bg-hover);
+}
+
 /* Theme Toggle Button */
 .theme-toggle-btn {
     display: flex;

@@ -19,6 +19,8 @@ function Navbar() {
         syncWithLocalStorage();
     }, [location.pathname, syncWithLocalStorage]);
 
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
     // Sync search input with URL search params if present
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
@@ -45,6 +47,10 @@ function Navbar() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [dropdownOpen]);
+
+    if (isAuthPage) {
+        return null;
+    }
 
     // Handle search submission or typing
     const handleSearchSubmit = (e) => {
@@ -80,10 +86,6 @@ function Navbar() {
                     <Link to="/" className="wolt-brand-link">
                         <span className="wolt-logo-text">wolt</span>
                     </Link>
-                    <div className="wolt-location-badge" title="Delivery Address">
-                        <span className="location-icon">📍</span>
-                        <span>Tel Aviv</span>
-                    </div>
                 </div>
 
                 {/* Center: Search Bar */}
@@ -112,6 +114,17 @@ function Navbar() {
 
                 {/* Right: Theme Toggle and Auth Controls */}
                 <div className="navbar-right">
+                    {isAuthenticated && (
+                        <button
+                            type="button"
+                            className="navbar-cart-btn"
+                            aria-label="Shopping cart"
+                            title="Shopping cart"
+                        >
+                            <span aria-hidden="true">🛒</span>
+                        </button>
+                    )}
+
                     {/* Dark/Light Mode Switch */}
                     <button
                         type="button"

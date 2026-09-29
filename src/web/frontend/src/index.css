@@ -1,13 +1,140 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* src/index.css - Wolt Design System with Light/Dark Theme Support */
+
+:root, [data-theme="light"] {
+  --wolt-blue: #00c2e8;
+  --wolt-blue-hover: #00a8c9;
+  --wolt-blue-active: #008fa8;
+  --wolt-blue-soft: #e5f8fc;
+  --wolt-blue-glow: rgba(0, 194, 232, 0.25);
+
+  --bg-primary: #f8f9fb;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-subtle: #f0f2f5;
+  --bg-hover: #e8ecf1;
+  --bg-active: #dfe4ea;
+
+  --text-primary: #191c1f;
+  --text-secondary: #5a6572;
+  --text-muted: #8b95a1;
+  --text-inverse: #ffffff;
+
+  --border-subtle: #e9ecef;
+  --border-medium: #d8dde3;
+  --border-strong: #bac3cc;
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-navbar: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+  --badge-bg: #edf2f7;
+  --badge-text: #2d3748;
+  --badge-promoted-bg: #ffedd5;
+  --badge-promoted-text: #9a3412;
+  --badge-rating-bg: #fef3c7;
+  --badge-rating-text: #92400e;
+
+  --navbar-bg: rgba(255, 255, 255, 0.96);
+  --input-bg: #edf1f5;
+  --input-bg-focus: #ffffff;
+  --input-border: transparent;
+  --input-text: #191c1f;
+  --input-placeholder: #8b95a1;
+
+  --pill-bg: #eef2f6;
+  --pill-text: #374151;
+  --pill-hover-bg: #e2e8f0;
+  --pill-active-bg: #00c2e8;
+  --pill-active-text: #ffffff;
+
+  --card-bg: #ffffff;
+  --dropdown-bg: #ffffff;
+  --divider-color: #eaedf1;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+[data-theme="dark"] {
+  --wolt-blue: #00c2e8;
+  --wolt-blue-hover: #26cff0;
+  --wolt-blue-active: #4dd8f3;
+  --wolt-blue-soft: rgba(0, 194, 232, 0.16);
+  --wolt-blue-glow: rgba(0, 194, 232, 0.35);
+
+  --bg-primary: #121518;
+  --bg-surface: #1b1f24;
+  --bg-surface-elevated: #23282f;
+  --bg-subtle: #242a32;
+  --bg-hover: #2c343e;
+  --bg-active: #343d49;
+
+  --text-primary: #f6f8fb;
+  --text-secondary: #9da8b6;
+  --text-muted: #6e7987;
+  --text-inverse: #121518;
+
+  --border-subtle: #272e38;
+  --border-medium: #333d4a;
+  --border-strong: #465364;
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --shadow-navbar: 0 2px 12px rgba(0, 0, 0, 0.4);
+
+  --badge-bg: #272e38;
+  --badge-text: #cbd5e1;
+  --badge-promoted-bg: #451a03;
+  --badge-promoted-text: #fed7aa;
+  --badge-rating-bg: #452a03;
+  --badge-rating-text: #fef08a;
+
+  --navbar-bg: rgba(27, 31, 36, 0.96);
+  --input-bg: #252b33;
+  --input-bg-focus: #1e2329;
+  --input-border: #333c48;
+  --input-text: #f6f8fb;
+  --input-placeholder: #6e7987;
+
+  --pill-bg: #242a32;
+  --pill-text: #cbd5e1;
+  --pill-hover-bg: #2c333e;
+  --pill-active-bg: #00c2e8;
+  --pill-active-text: #ffffff;
+
+  --card-bg: #1b1f24;
+  --dropdown-bg: #21262d;
+  --divider-color: #2b333e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.2s ease;
+}
+
+input, select, textarea {
+  font-family: inherit;
 }

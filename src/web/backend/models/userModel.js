@@ -14,7 +14,8 @@ const create = (data) => {
         name: data.name || "",
         phone: data.phone || "",
         address: data.address || "",
-        picture: data.picture || ""
+        picture: data.picture || "",
+        location: { x: data.location.x, y: data.location.y }
     };
     db.addUser(newUser);
     return newUser;
@@ -23,7 +24,8 @@ const create = (data) => {
 const getById = (id) => {
     const user = db.getUserById(id);
     if (!user) return null;
-    const { password, phone, address, role, ...safeUser } = user;
+    // Exclude sensitive fields but include location so the frontend can compute distances
+    const { password, ...safeUser } = user;
     return safeUser;
 };
 
@@ -31,8 +33,23 @@ const authenticate = (username, password) => {
     return db.getUsers().find(u => u.username === username && u.password === password);
 };
 
+/**
+ * Update the geolocation coordinates of a user.
+ * @param {string} id - The user's ID.
+ * @param {{ x: number, y: number }} location - The new coordinates.
+ * @returns {object|null} The updated safe user object, or null if not found.
+ */
+const updateLocation = (id, location) => {
+    const user = db.getUserById(id);
+    if (!user) return null;
+    user.location = { x: location.x, y: location.y };
+    const { password, ...safeUser } = user;
+    return safeUser;
+};
+
 module.exports = {
     create,
     getById,
-    authenticate
+    authenticate,
+    updateLocation
 };
