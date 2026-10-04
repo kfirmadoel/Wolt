@@ -8,7 +8,8 @@ const search = (query) => {
     //chained filter on all restaurants to find the ones contain query.
     const restaurants = db.getRestaurants().filter(r => 
         r.name.toLowerCase().includes(lowerQuery) ||
-        r.description?.toLowerCase().includes(lowerQuery)
+        r.description?.toLowerCase().includes(lowerQuery) ||
+        r.category?.toLowerCase().includes(lowerQuery)
      );
     //chained filter on all producst to find the ones contain query.
     const products = db.getProducts().filter(p => 

@@ -1,0 +1,372 @@
+/* src/css/Navbar.css - Wolt Navigation Bar */
+
+.wolt-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: var(--navbar-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-navbar);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.wolt-navbar-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Left Section: Brand & Location */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.wolt-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.wolt-logo-text {
+    font-size: 1.85rem;
+    font-weight: 900;
+    color: var(--wolt-blue);
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.wolt-location-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background-color: var(--bg-subtle);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    cursor: default;
+    transition: all 0.2s ease;
+}
+
+.wolt-location-badge:hover {
+    background-color: var(--bg-hover);
+}
+
+.location-icon {
+    color: var(--wolt-blue);
+    font-size: 0.95rem;
+}
+
+/* Center Section: Search Bar in Navbar */
+.navbar-center {
+    flex: 1;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.navbar-search-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 38px 0 42px;
+    border-radius: 24px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-subtle);
+    color: var(--input-text);
+    font-size: 0.92rem;
+    transition: all 0.2s ease;
+}
+
+.navbar-search-input:focus {
+    outline: none;
+    background-color: var(--input-bg-focus);
+    border-color: var(--wolt-blue);
+    box-shadow: 0 0 0 3px var(--wolt-blue-glow);
+}
+
+.navbar-search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    pointer-events: none;
+}
+
+.navbar-search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--border-medium);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border: none;
+}
+
+.navbar-search-clear:hover {
+    background-color: var(--text-muted);
+    color: #ffffff;
+}
+
+/* Right Section: Theme Toggle & User controls */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.navbar-cart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.navbar-cart-btn:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    background-color: var(--bg-subtle);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-medium);
+}
+
+.theme-icon {
+    font-size: 1.05rem;
+    line-height: 1;
+}
+
+/* Logged-out Auth buttons */
+.nav-btn-login {
+    padding: 9px 18px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background-color: transparent;
+    transition: all 0.2s ease;
+}
+
+.nav-btn-login:hover {
+    background-color: var(--bg-hover);
+}
+
+.nav-btn-register {
+    padding: 9px 20px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: var(--wolt-blue);
+    box-shadow: 0 2px 8px var(--wolt-blue-glow);
+    transition: all 0.2s ease;
+}
+
+.nav-btn-register:hover {
+    background-color: var(--wolt-blue-hover);
+    transform: translateY(-1px);
+}
+
+/* User Profile Section */
+.user-profile-menu-container {
+    position: relative;
+}
+
+.user-profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 12px 4px 4px;
+    border-radius: 28px;
+    background-color: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-profile-trigger:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-medium);
+}
+
+.user-avatar-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--wolt-blue);
+}
+
+.user-avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--wolt-blue);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+
+.user-name-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-menu-chevron {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* User Dropdown Menu */
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 220px;
+    background-color: var(--dropdown-bg);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 8px 0;
+    z-index: 1050;
+    animation: dropdownFadeIn 0.2s ease forwards;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown-header {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--divider-color);
+}
+
+.dropdown-user-name {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.dropdown-user-handle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    background-color: var(--divider-color);
+    margin: 6px 0;
+}
+
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    text-align: left;
+    transition: background-color 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.user-dropdown-item.logout {
+    color: #e53e3e;
+}
+
+.user-dropdown-item.logout:hover {
+    background-color: rgba(229, 62, 62, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .wolt-navbar-container {
+        padding: 0 16px;
+        gap: 12px;
+    }
+    .wolt-location-badge {
+        display: none;
+    }
+    .navbar-center {
+        max-width: 200px;
+    }
+    .theme-toggle-label {
+        display: none;
+    }
+    .user-name-label {
+        display: none;
+    }
+}
+
