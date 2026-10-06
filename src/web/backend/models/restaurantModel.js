@@ -1,66 +1,54 @@
 // models/restaurantModel.js
-const db = require('../database');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const getAll = () => db.getRestaurants();
-
-const getByOwner = (ownerId) => db.getRestaurants().filter((restaurant) => restaurant.ownerId === ownerId);
-
-const getById = (id) => db.getRestaurantById(id);
-
-const create = (data,ownerId) => {
-    const restaurant = {
-        // That will promise unique id for everyone
-        id: 'rest_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-        ownerId,
-        name: data.name,
-        description: data.description || "",
-        address: data.address || "",
-        phone: data.phone || "",
-        category: typeof data.category === 'string' ? data.category.trim() : "",
-        isPromoted: data.isPromoted === true,
-        picture: data.picture,
-        location: {
-            x: data.location.x,
-            y: data.location.y
+const restaurantSchema = new Schema({
+    id: {
+        type: String,
+        unique: true
+    },
+    ownerId: {
+        type: String,
+        required: true
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        default: ""
+    },
+    address: {
+        type: String,
+        default: ""
+    },
+    phone: {
+        type: String,
+        default: ""
+    },
+    category: {
+        type: String,
+        required: true
+    },
+    isPromoted: {
+        type: Boolean,
+        default: false
+    },
+    picture: {
+        type: String,
+        required: true
+    },
+    location: {
+        x: {
+            type: Number,
+            required: true
+        },
+        y: {
+            type: Number,
+            required: true
         }
-    };
-    db.addRestaurant(restaurant);
-    return restaurant;
-};
+    }
+}, { timestamps: true });
 
-const update = (id, data) => {
-    const restaurant = db.getRestaurantById(id);
-    if (!restaurant) return null;
-    restaurant.name = data.name ?? restaurant.name;
-    restaurant.description = data.description ?? restaurant.description; 
-    restaurant.address = data.address ?? restaurant.address;
-    restaurant.phone = data.phone ?? restaurant.phone;
-    if (data.category !== undefined) {
-        restaurant.category = data.category.trim();
-    }
-    if (data.isPromoted !== undefined) {
-        restaurant.isPromoted = data.isPromoted;
-    }
-    if (data.picture !== undefined) {
-        restaurant.picture = data.picture;
-    }
-    if (data.location !== undefined) {
-        restaurant.location = { x: data.location.x, y: data.location.y };
-    }
-    
-    return restaurant;
-};
-
-const deleteRestaurant = (id) => {
-    db.getProductsByRestaurantId(id).forEach((product) => db.deleteProduct(product.id));
-    return db.deleteRestaurant(id);
-};
-
-module.exports = {
-    getAll,
-    getByOwner,
-    getById,
-    create,
-    update,
-    deleteRestaurant
-};
+module.exports = mongoose.model('Restaurant', restaurantSchema);

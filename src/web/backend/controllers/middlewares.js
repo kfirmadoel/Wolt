@@ -1,5 +1,5 @@
 // controllers/middlewares
-const db = require('../database');
+const restaurantService = require('../services/restaurantService');
 const jwtService = require('../services/jwtService');
 
 const requireAuth = (req, res, next) => {
@@ -44,15 +44,14 @@ const requireRole = (role) => (req, res, next) => {
     next();
 };
 
-const checkRestaurant = (req, res, next) => {
-    const restaurant = db.getRestaurantById(req.params.id);
-    
+const checkRestaurant = async (req, res, next) => {
+    const restaurant = await restaurantService.getById(req.params.id);
+
     if (!restaurant) {
         return res.status(404).json({ error: "Restaurant not found" });
     }
-    
-    req.restaurant = restaurant; 
-    
+
+    req.restaurant = restaurant;
     next();
 };
 

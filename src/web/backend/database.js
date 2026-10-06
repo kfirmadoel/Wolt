@@ -1,5 +1,5 @@
 // src/web/database.js
-
+/*
 // Global arrays (In-Memory Database)
 // Data will be cleared upon server restart, which is expected per instructions.
 const users = [];
@@ -65,4 +65,4 @@ module.exports = {
     getProducts, addProduct, getProductById, getProductsByRestaurantId, getProductByRestaurantAndId, deleteProduct,
     // Orders
     getOrders, addOrder, getOrderById, getOrdersByUserId, deleteOrder
-};
+};*/

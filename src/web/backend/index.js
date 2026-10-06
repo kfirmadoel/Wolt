@@ -1,11 +1,14 @@
 // src/web/index.js
 const express = require('express');
 const cors = require('cors')
+const connectDB = require('./services/mongoService');
 const usersRouter = require('./routes/usersRouter');
 const restaurantsRouter = require('./routes/restaurantsRouter');
 const searchRouter = require ('./routes/searchRouter');
 const ordersRouter = require('./routes/orderRouter');
 const usersController = require('./controllers/usersController');
+
+connectDB();
 
 const app = express();
 app.use(cors());
