@@ -51,11 +51,14 @@ const getUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    if (!req.body.username || !req.body.password) {
+    const { username, password } = req.body;
+
+    // typeof checks block NoSQL injection such as {"username": {"$ne": null}}
+    if (typeof username !== 'string' || !username.trim() || typeof password !== 'string' || !password) {
         return res.status(400).json({ error: "Username and password are required" });
     }
 
-    const user = await userService.authenticate(req.body.username, req.body.password);
+    const user = await userService.authenticate(username.trim(), password);
     if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
     }
