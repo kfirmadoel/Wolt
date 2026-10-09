@@ -1,131 +1,93 @@
-const assert = require('assert');
-const request = require('supertest');
+const assert = require('node:assert/strict');
+const {
+    api,
+    authorized,
+    createUser,
+    createRestaurant,
+    createProduct
+} = require('./helpers');
 
-const BASE = "http://web-server:3000";
-
-// The assignment requires passing the logged-in user's id as an HTTP header
-// for any request that requires login (e.g. placing/reading an order).
-// Adjust "x-user-id" to whatever header name your controllers actually read.
-const authHeader = (userId) => ({ "x-user-id": userId });
-
-describe("Orders API", () => {
-
-    let restId, productId, userId, orderId;
+describe('Orders API', () => {
+    let customer;
+    let owner;
+    let restaurantId;
+    let productId;
+    let orderId;
 
     before(async () => {
-        const r1 = await request(BASE)
-            .post("/api/restaurants")
-            .send({
-                name: "Order Rest",
-                description: "desc",
-                address: "addr",
-                phone: "050-0000000"
-            });
-        restId = r1.headers.location.split("/").pop();
-
-        const p1 = await request(BASE)
-            .post(`/api/restaurants/${restId}/products`)
-            .send({
-                name: "Burger",
-                description: "desc",
-                price: 30
-            });
-        productId = p1.headers.location.split("/").pop();
-
-        const u1 = await request(BASE)
-            .post("/api/users")
-            .send({
-                username: "orderUser",
-                password: "pass",
-                name: "Test User",
-                phone: "050-0000000",
-                address: "addr"
-            });
-        userId = u1.body.id;
+        customer = await createUser();
+        owner = await createUser('restaurant_owner');
+        restaurantId = await createRestaurant(owner.token);
+        productId = await createProduct(owner.token, restaurantId);
     });
 
-    it("22. should create order", async () => {
-        const res = await request(BASE)
-            .post("/api/orders")
-            .set(authHeader(userId))
+    after(async () => {
+        if (orderId) {
+            await authorized(api.delete(`/api/orders/${orderId}`), customer.token);
+        }
+        if (restaurantId) {
+            await authorized(
+                api.delete(`/api/restaurants/${restaurantId}`),
+                owner.token
+            );
+        }
+    });
+
+    it('creates an order for the authenticated user', async () => {
+        const response = await authorized(api.post('/api/orders'), customer.token)
             .send({
-                userId,
-                restaurantId: restId,
+                restaurantId,
                 items: [{ productId, quantity: 2 }]
             });
 
-        assert.strictEqual(res.status, 201);
-        orderId = res.headers.location.split("/").pop();
+        assert.equal(response.status, 201);
+        assert.ok(response.headers.location);
+        orderId = response.body.id;
+        assert.equal(response.body.userId, customer.id);
+        assert.equal(response.body.totalPrice, 50);
     });
 
-    it("23. should get order", async () => {
-        const res = await request(BASE)
-            .get(`/api/orders/${orderId}`)
-            .set(authHeader(userId));
+    it('lists and retrieves only the authenticated user order', async () => {
+        const list = await authorized(api.get('/api/orders'), customer.token);
+        const response = await authorized(
+            api.get(`/api/orders/${orderId}`),
+            customer.token
+        );
 
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.items[0].quantity, 2);
-        assert.strictEqual(res.body.status, "pending");
+        assert.equal(list.status, 200);
+        assert.ok(list.body.some((order) => order.id === orderId));
+        assert.equal(response.status, 200);
+        assert.equal(response.body.items[0].quantity, 2);
+        assert.equal(response.body.status, 'pending');
     });
 
-    it("24. GET /api/orders should list the logged-in user's orders", async () => {
-        const res = await request(BASE)
-            .get("/api/orders")
-            .set(authHeader(userId));
+    it('updates order items and recalculates the total', async () => {
+        const update = await authorized(
+            api.patch(`/api/orders/${orderId}`),
+            customer.token
+        ).send({
+            status: 'confirmed',
+            items: [{ productId, quantity: 5 }]
+        });
+        const response = await authorized(
+            api.get(`/api/orders/${orderId}`),
+            customer.token
+        );
 
-        assert.strictEqual(res.status, 200);
-        assert.ok(Array.isArray(res.body));
-        assert.ok(res.body.some(o => o.id === orderId));
+        assert.equal(update.status, 204);
+        assert.equal(response.body.status, 'confirmed');
+        assert.equal(response.body.items[0].quantity, 5);
+        assert.equal(response.body.totalPrice, 125);
     });
 
-    it("25. should update order status", async () => {
-        const res = await request(BASE)
-            .patch(`/api/orders/${orderId}`)
-            .set(authHeader(userId))
-            .send({ status: "confirmed" });
+    it('rejects requests without authentication and empty orders', async () => {
+        const unauthenticated = await api.get('/api/orders');
+        const emptyOrder = await authorized(
+            api.post('/api/orders'),
+            customer.token
+        ).send({ restaurantId, items: [] });
 
-        assert.strictEqual(res.status, 204);
-    });
-
-    it("26. should update items and recalc total", async () => {
-        await request(BASE)
-            .patch(`/api/orders/${orderId}`)
-            .set(authHeader(userId))
-            .send({ items: [{ productId, quantity: 5 }] });
-
-        const res = await request(BASE)
-            .get(`/api/orders/${orderId}`)
-            .set(authHeader(userId));
-
-        assert.strictEqual(res.body.items[0].quantity, 5);
-        assert.strictEqual(res.body.status, "confirmed");
-        assert.strictEqual(res.body.totalPrice, 150); // 30 * 5
-    });
-
-    it("27. should delete order", async () => {
-        const res = await request(BASE)
-            .delete(`/api/orders/${orderId}`)
-            .set(authHeader(userId));
-
-        assert.strictEqual(res.status, 204);
-    });
-
-    // CLEANUP
-    after(async () => {
-        const orders = await request(BASE)
-            .get("/api/orders")
-            .set(authHeader(userId));
-        for (const o of orders.body || []) {
-            await request(BASE)
-                .delete(`/api/orders/${o.id}`)
-                .set(authHeader(userId));
-        }
-
-        const products = await request(BASE).get(`/api/restaurants/${restId}/products`);
-        for (const p of products.body) {
-            await request(BASE).delete(`/api/restaurants/${restId}/products/${p.id}`);
-        }
-
-        await request(BASE).delete(`/api/restaurants/${restId}`);
+        assert.equal(unauthenticated.status, 403);
+        assert.equal(emptyOrder.status, 400);
     });
 });

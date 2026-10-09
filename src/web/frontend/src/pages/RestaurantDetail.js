@@ -1,8 +1,9 @@
 // src/pages/RestaurantDetail.js
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiFetch } from '../helper/api';
-import '../css/RestaurantSection.css';
+import { useCart } from '../context/CartContext';
+import '../css/RestaurantDetail.css';
 
 function RestaurantDetail() {
     const { id } = useParams();
@@ -10,132 +11,157 @@ function RestaurantDetail() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [cartMessage, setCartMessage] = useState('');
+    const { restaurantId: cartRestaurantId, items: cartItems, itemCount, total, addItem } = useCart();
+
+    const fetchDetails = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const [restaurantResponse, productsResponse] = await Promise.all([
+                apiFetch(`/api/restaurants/${id}`),
+                apiFetch(`/api/restaurants/${id}/products`)
+            ]);
+            if (!restaurantResponse.ok) throw new Error('Restaurant not found.');
+            if (!productsResponse.ok) throw new Error('Could not load the restaurant menu.');
+
+            const [restaurantData, productsData] = await Promise.all([
+                restaurantResponse.json(),
+                productsResponse.json()
+            ]);
+            setRestaurant(restaurantData);
+            setProducts(Array.isArray(productsData) ? productsData : []);
+        } catch (requestError) {
+            setError(requestError.message || 'Could not reach the server.');
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
 
     useEffect(() => {
-        const fetchDetails = async () => {
-            setLoading(true);
-            try {
-                const [restRes, prodRes] = await Promise.all([
-                    apiFetch(`/api/restaurants/${id}`),
-                    apiFetch(`/api/restaurants/${id}/products`)
-                ]);
-
-                if (!restRes.ok) {
-                    throw new Error('Restaurant not found');
-                }
-
-                const restData = await restRes.json();
-                setRestaurant(restData);
-
-                if (prodRes.ok) {
-                    const prodData = await prodRes.json();
-                    setProducts(Array.isArray(prodData) ? prodData : []);
-                }
-            } catch (err) {
-                console.error(err);
-                setError(err.message || 'Error loading restaurant');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchDetails();
-    }, [id]);
+    }, [fetchDetails]);
+
+    const menuGroups = useMemo(() => {
+        const groups = new Map();
+        products.forEach((product) => {
+            const category = product.category?.trim() || 'Menu';
+            if (!groups.has(category)) groups.set(category, []);
+            groups.get(category).push(product);
+        });
+        return Array.from(groups.entries());
+    }, [products]);
+
+    const handleAddToCart = (product) => {
+        if (cartRestaurantId && cartRestaurantId !== id && cartItems.length > 0) {
+            const shouldReplace = window.confirm(
+                'Your cart contains items from another restaurant. Clear it and start a new cart?'
+            );
+            if (!shouldReplace) return;
+        }
+        addItem(restaurant, product);
+        setCartMessage(`${product.name} added to your cart.`);
+    };
 
     if (loading) {
         return (
-            <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <h2>Loading restaurant...</h2>
-            </div>
+            <main className="restaurant-detail-state" role="status">Loading restaurant menu...</main>
         );
     }
 
     if (error || !restaurant) {
         return (
-            <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-                <h2>Restaurant Not Found</h2>
+            <main className="restaurant-detail-state">
+                <h1>Restaurant unavailable</h1>
                 <p>{error}</p>
-                <Link to="/" style={{ color: 'var(--wolt-blue)', fontWeight: 'bold' }}>
-                    ← Back to all restaurants
-                </Link>
-            </div>
+                <Link to="/" className="restaurant-back-link">← Back to restaurants</Link>
+            </main>
         );
     }
 
     return (
-        <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '30px 20px 80px' }}>
-            <Link to="/" style={{ color: 'var(--wolt-blue)', fontWeight: 'bold', display: 'inline-block', marginBottom: '16px' }}>
-                ← Back to Discovery
-            </Link>
+        <main className="restaurant-detail-page">
+            <Link to="/" className="restaurant-back-link">← Back to restaurants</Link>
 
-            <div style={{
-                backgroundColor: 'var(--bg-surface)',
-                borderRadius: '20px',
-                padding: '30px',
-                border: '1px solid var(--border-subtle)',
-                boxShadow: 'var(--shadow-sm)',
-                marginBottom: '30px'
-            }}>
-                {restaurant.picture && (
-                    <img
-                        src={restaurant.picture}
-                        alt={restaurant.name}
-                        style={{ width: '100%', maxHeight: '340px', objectFit: 'cover', borderRadius: '12px', marginBottom: '20px' }}
-                    />
+            <header className="restaurant-hero">
+                {restaurant.picture ? (
+                    <img className="restaurant-hero-image" src={restaurant.picture} alt={restaurant.name} />
+                ) : (
+                    <div className="restaurant-hero-placeholder" aria-hidden="true">🍽️</div>
                 )}
-                <h1 style={{ margin: '0 0 10px', fontSize: '2.2rem', fontWeight: 900 }}>{restaurant.name}</h1>
-                {restaurant.description && (
-                    <p style={{ color: 'var(--text-secondary)', margin: '0 0 16px', fontSize: '1.05rem' }}>
-                        {restaurant.description}
-                    </p>
-                )}
-                {(restaurant.address || restaurant.phone || restaurant.deliveryTime) && (
-                    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                <div className="restaurant-hero-copy">
+                    <div className="restaurant-hero-meta">
+                        {restaurant.category && <span>{restaurant.category}</span>}
+                        {restaurant.isPromoted && <span className="restaurant-promoted-tag">Promoted</span>}
+                    </div>
+                    <h1>{restaurant.name}</h1>
+                    {restaurant.description && <p>{restaurant.description}</p>}
+                    <div className="restaurant-details-meta">
                         {restaurant.address && <span>📍 {restaurant.address}</span>}
-                        {restaurant.phone && <span>📞 {restaurant.phone}</span>}
+                        {restaurant.phone && <span>☎ {restaurant.phone}</span>}
                         {restaurant.deliveryTime && <span>🚴 {restaurant.deliveryTime}</span>}
                     </div>
-                )}
-            </div>
+                </div>
+            </header>
 
-            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '20px' }}>Menu Items</h2>
-            {products.length === 0 ? (
-                <div style={{
-                    padding: '40px',
-                    textAlign: 'center',
-                    backgroundColor: 'var(--bg-surface)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--border-subtle)',
-                    color: 'var(--text-secondary)'
-                }}>
-                    <p>No menu items listed yet for this restaurant.</p>
-                </div>
-            ) : (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '20px'
-                }}>
-                    {products.map((item) => (
-                        <div key={item.id} style={{
-                            backgroundColor: 'var(--card-bg)',
-                            borderRadius: '16px',
-                            padding: '20px',
-                            border: '1px solid var(--border-subtle)',
-                            boxShadow: 'var(--shadow-sm)'
-                        }}>
-                            <h3 style={{ margin: '0 0 8px', fontSize: '1.15rem' }}>{item.name}</h3>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: '0 0 14px' }}>
-                                {item.description}
-                            </p>
-                            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--wolt-blue)' }}>
-                                ₪{item.price}
-                            </span>
+            <div className="restaurant-menu-layout">
+                <section className="restaurant-menu-content" aria-label="Restaurant menu">
+                    <div className="restaurant-menu-heading">
+                        <h2>Menu</h2>
+                        <span>{products.length} {products.length === 1 ? 'item' : 'items'}</span>
+                    </div>
+                    {products.length === 0 ? (
+                        <div className="restaurant-menu-empty">
+                            <h3>Menu coming soon</h3>
+                            <p>This restaurant has not added menu items yet.</p>
                         </div>
+                    ) : menuGroups.map(([category, categoryProducts]) => (
+                        <section className="menu-category" key={category}>
+                            <h3>{category}</h3>
+                            <div className="menu-product-list">
+                                {categoryProducts.map((product) => (
+                                    <article className="menu-product" key={product.id}>
+                                        <div className="menu-product-copy">
+                                            <h4>{product.name}</h4>
+                                            {product.description && <p>{product.description}</p>}
+                                            <strong>₪{Number(product.price).toFixed(2)}</strong>
+                                        </div>
+                                        {product.picture && <img src={product.picture} alt={product.name} className="menu-product-image" />}
+                                        <button type="button" className="menu-add-button" onClick={() => handleAddToCart(product)} aria-label={`Add ${product.name} to cart`}>
+                                            <span aria-hidden="true">+</span><span>Add</span>
+                                        </button>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
                     ))}
-                </div>
-            )}
-        </div>
+                </section>
+
+                <aside className="restaurant-cart-summary">
+                    <div className="restaurant-cart-summary-heading">
+                        <h2>Your order</h2>
+                        <span>{itemCount}</span>
+                    </div>
+                    {cartRestaurantId === id && cartItems.length > 0 ? (
+                        <>
+                            <ul>
+                                {cartItems.map(({ product, quantity }) => (
+                                    <li key={product.id}>
+                                        <span>{quantity} × {product.name}</span>
+                                        <strong>₪{(Number(product.price) * quantity).toFixed(2)}</strong>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="restaurant-cart-total"><span>Total</span><strong>₪{total.toFixed(2)}</strong></div>
+                            <Link to="/cart" className="restaurant-view-cart">Review cart</Link>
+                        </>
+                    ) : (
+                        <p className="restaurant-cart-empty">Add a dish to start your order.</p>
+                    )}
+                    {cartMessage && <p className="cart-live-message" role="status">{cartMessage}</p>}
+                </aside>
+            </div>
+        </main>
     );
 }
 

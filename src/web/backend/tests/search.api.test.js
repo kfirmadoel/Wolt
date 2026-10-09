@@ -1,42 +1,50 @@
-const assert = require('assert');
-const request = require('supertest');
+const assert = require('node:assert/strict');
+const {
+    api,
+    authorized,
+    createUser,
+    createRestaurant,
+    createProduct
+} = require('./helpers');
 
-const BASE = "http://web-server:3000";
-
-// The assignment spec is explicit: http://foo.com/api/search/:query
-// This is a PATH parameter, not a query string (?q=...).
-describe("Search API", () => {
-
-    let restId;
+describe('Search API', () => {
+    let owner;
+    let restaurantId;
+    let productId;
 
     before(async () => {
-        const res = await request(BASE)
-            .post("/api/restaurants")
-            .send({
-                name: "Pizza Palace Deluxe",
-                description: "desc",
-                address: "addr",
-                phone: "050-0000000"
-            });
-
-        restId = res.headers.location.split("/").pop();
+        owner = await createUser('restaurant_owner');
+        restaurantId = await createRestaurant(owner.token, 'Searchable Pizza Place');
+        productId = await createProduct(owner.token, restaurantId, 'Searchable Pasta');
     });
 
-    it("28. should find restaurant by name", async () => {
-        const res = await request(BASE).get(`/api/search/pizza`);
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.restaurants.length, 1);
-        assert.strictEqual(res.body.restaurants[0].id, restId);
-    });
-
-    it("29. should return empty results", async () => {
-        const res = await request(BASE).get(`/api/search/doesnotexistanywhere`);
-        assert.strictEqual(res.status, 200);
-        assert.deepStrictEqual(res.body, { restaurants: [], products: [] });
-    });
-
-    // CLEANUP - restaurantModel has getById/deleteRestaurant, safe
     after(async () => {
-        await request(BASE).delete(`/api/restaurants/${restId}`);
+        if (restaurantId) {
+            await authorized(
+                api.delete(`/api/restaurants/${restaurantId}`),
+                owner.token
+            );
+        }
+    });
+
+    it('finds matching restaurants and products case-insensitively', async () => {
+        const response = await api.get('/api/search/searchable');
+
+        assert.equal(response.status, 200);
+        assert.ok(response.body.restaurants.some(
+            (restaurant) => restaurant.id === restaurantId
+        ));
+        assert.ok(response.body.products.some(
+            (product) => product.id === productId
+        ));
+    });
+
+    it('returns empty lists when there are no matches', async () => {
+        const response = await api.get(
+            '/api/search/no-match-for-this-test-query-123456'
+        );
+
+        assert.equal(response.status, 200);
+        assert.deepEqual(response.body, { restaurants: [], products: [] });
     });
 });

@@ -14,6 +14,8 @@ const create = (restaurantId, data) => {
         restaurantId,
         name: data.name,
         description: data.description || "",
+        category: typeof data.category === 'string' ? data.category.trim() : "",
+        picture: data.picture || data.image || "",
         // Ensure price is stored as a number (accept numeric strings)
         price: Number(data.price),
     };
@@ -28,6 +30,8 @@ const updateProduct = (pId, restaurantId, data) => {
     product.name = data.name ?? product.name;
     product.description = data.description ?? product.description;
     product.price = data.price !== undefined ? Number(data.price) : product.price;
+    product.category = data.category ?? product.category;
+    product.picture = data.picture ?? data.image ?? product.picture;
     
     return product;
 }

@@ -1,258 +1,121 @@
-# Exercise 3 - Web Server Integration with C++ Recommendation Server
+# Wolt Clone — Web Application
 
-## Project Overview
+This project runs the web application in `src/web`:
 
-This assignment adds a Node.js web frontend to the C++ recommendation server built in Exercise 2. The web server exposes an HTTP API and internally uses the C++ TCP service to record product views and fetch recommendations.
+- **Frontend:** React single-page application.
+- **Backend:** Node.js/Express REST API.
+- **Backend tests:** Mocha and Supertest tests run in temporary container.
 
-The system is implemented in **Node.js/Express** on the web layer, and continues to use the **C++** TCP server from Ex2 for the core recommendation logic. The web layer communicates with the C++ server over a line-based text protocol.
+The commands in this guide use Docker only. Run them from the repository root, where `docker-compose.yml` and `.env` are located.
 
-## Architecture & SOLID Principles Analysis
+## Ports
 
-Following the same approach as Ex2, this integration adheres to the **Open-Closed Principle (OCP)**: the existing C++ core is extended, not modified.
+Change the ports in the root `.env` file if needed:
 
-### 1. Web server extension without modifying core logic
-**Did it require changing the C++ application core?** No.
-**Explanation:** The Node.js service communicates with the existing C++ server using the same TCP command protocol from Ex2. The C++ recommendation engine, its command classes, and its storage layer remain unchanged.
-
-### 2. Clean separation between HTTP and recommendation logic
-**Did it require changing existing command handling?** No.
-**Explanation:** The web server only forwards requests to the C++ TCP server and relays responses back to HTTP clients. The `tcpClient.js` module is the single point of contact with the C++ service, keeping HTTP concerns and recommendation logic isolated from one another.
-
-### 3. Docker runtime options
-**Did it require changes to Docker behavior?** Yes.
-**Explanation:** The compose setup was extended (not rewritten) to support a fast default app startup, plus optional profiles for running tests or the client separately. The core service definitions (`cpp-server`, `web-server`) did not need to change to support these additional run modes.
-
-## How to Build and Run
-
-### Option 1: Run servers only (fast startup)
-
-From the project root:
-
-```bash
-docker-compose --profile dev up --build
+```dotenv
+FRONTEND_PORT=3001
+BACKEND_PORT=3000
 ```
 
-This starts the application services:
+- `FRONTEND_PORT` is the host port for the website.
+- `BACKEND_PORT` is the host and container port for the API.
 
-- `cpp-server` — internal TCP service
-- `web-server` — HTTP API on port `3000`
+The frontend image is built with the API address `http://localhost:<BACKEND_PORT>`. Rebuild the images after changing either port.
 
-### Option 2: Run full test suite (everything)
+## Before starting: clean up this project's old containers
 
-To run the application and execute both the C++ and Node.js test suites:
+If you have run an older version of this project, first run:
 
-```bash
-docker-compose --profile full up --build
-```
-**important Note: The api tests make the server dirty mean that before start to work with the server close all instances (Cleaning Up) and open with dev profile (Option 1)**
-
-This starts all services and runs:
-
-- `cpp-server` — internal TCP service
-- `web-server` — HTTP API
-- `cpp-tests` — C++ test suite
-- `api-tests` — Node.js API test suite
-
-### Option 3: Run only API tests
-
-```bash
-docker-compose --profile api up --build
+```sh
+docker compose down --remove-orphans
 ```
 
-**important Note: The api tests make the server dirty mean that before start to work with the server close all instances (Cleaning Up) and open with dev profile (Option 1)**
+This stops and removes containers belonging to this Compose project, including old project services no longer listed in the current Compose file. It doesn't remove unrelated containers from other projects, and it does not delete project source files.
 
-This runs:
+Then inspect running containers and their published ports:
 
-- `cpp-server` — internal TCP service
-- `web-server` — HTTP API
-- `api-tests` — Node.js API test suite
-
-### Option 4:
-
-
-```bash
-docker-compose --profile unit up --build
+```sh
+docker ps --format "table {{.Names}}\t{{.Ports}}"
 ```
 
-This runs:
+If another container is using one of this project's ports, either change the corresponding value in `.env`, or stop that specific container only after confirming it is safe to stop:
 
-- `cpp-server` — internal TCP service
-- `cpp-tests` — C++ test suite (GTest)
-
-### Cleaning up
-
-To stop and remove all containers:
-
-```bash
-docker compose --profile "*" down --remove-orphans
+```sh
+docker stop <container-name-or-id>
 ```
 
-### Environment Variables
+Do not remove or stop every Docker container just to resolve a port conflict; an unrelated container may belong to another project or user.
 
-The web service reads:
+## Build the images
 
-| Variable          | Default      | Description                           |
-|-------------------|--------------|---------------------------------------|
-| `CPP_SERVER_HOST` | `cpp-server` | Hostname of the C++ TCP server        |
-| `CPP_SERVER_PORT` | `12345`      | Port the C++ TCP server listens on    |
+Build both web service images:
 
-## Docker Compose Services
+```sh
+docker compose --profile app build
+```
 
-- `cpp-server` — C++ TCP recommendation server
-- `web-server` — Node.js HTTP server
-- `cpp-tests` — C++ test suite using GTest
-- `api-tests` — Node.js API test suite
+The backend image contains the Node.js API. The frontend image first builds the React app, then copies its static output into an Nginx image.
 
-**Profiles:**
-- `dev` — Servers only (fastest startup )
-- `api` — Servers + API tests
-- `unit` — C++ server + C++ tests
-- `full` — Everything (all servers and all tests)
+Build just one service if needed:
 
-## API structure
+```sh
+docker compose --profile backend build backend
+docker compose --profile frontend build frontend
+```
 
-types
+## Start services separately or together
 
-- `User`:
-  - `id` (string) — unique user id (e.g. `user_161790...`)
-  - `username` (string)
-  - `password` (string)
-  - `role` (string)
-  - `name` (string)
-  - `phone` (string)
-  - `address` (string)
+### Frontend only
 
-- `Restaurant`:
-  - `id` (string) — unique restaurant id (e.g. `rest_...`)
-  - `name` (string)
-  - `description` (string)
-  - `address` (string)
-  - `phone` (string)
+```sh
+docker compose --profile frontend up --build -d frontend
+```
 
-- `Product`:
-  - `id` (string) — unique product id (e.g. `prod_...`)
-  - `restaurantId` (string)
-  - `name` (string)
-  - `description` (string)
-  - `price` (number)
+The website files load at `http://localhost:<FRONTEND_PORT>`. The frontend can be viewed without the backend, but API-dependent features such as login, registration, restaurant data, and orders will not work.
 
-- `Order`:
-  - `id` (string)
-  - `userId` (string)
-  - `restaurantId` (string)
-  - `items` (array of object) — each item: `{ "productId": string, "quantity": number }`
-  - `totalPrice` (number)
-  - `status` (string) — e.g. `pending`, `completed`
-  - `createdAt` (ISO timestamp string)
+### Backend only
 
-Endpoints
+```sh
+docker compose --profile backend up --build -d backend
+```
 
-Users
+The API is available at `http://localhost:<BACKEND_PORT>`. Check that it is responding at `http://localhost:<BACKEND_PORT>/api/health`.
 
-- POST /api/users
-  - Create user
-  - Request body:
-    {
-      "username": "alice",
-      "password": "hunter2",
-      "name": "Alice Example",     
-      "phone": "123-4567",         
-      "address": "Street 1"        
-    }
-  - Success (201):
-    {
-      "message": "User created successfully",
-      "id": "user_1617..."
-    }
-  - Errors: 400 (missing fields), 409 (username taken)
+### Frontend and backend together (normal app use)
 
-- POST /api/tokens
-  - Authenticate user
-  - Request body: `{ "username": "alice", "password": "hunter2" }`
-  - Success (200): `{ "id": "user_1617..." }` — clients may use `id` in subsequent calls 
-  - Errors: 400 (missing fields), 401 (invalid credentials)
+```sh
+docker compose --profile app up --build -d
+```
 
-- GET /api/users/:User_Id
-  - Get user details
-  - Success (200): full `User` object (password is not returned)
-  - Errors: 404
+This starts both services. Use this option for normal app functionality: the browser loads the frontend, and the frontend sends API requests to the backend.
 
-Restaurants
+## Run backend tests
 
-- GET /api/restaurants
-  - Returns: `[ Restaurant, ... ]` (200)
+Run the test suite in Docker:
 
-- POST /api/restaurants
-  - Create restaurant
-  - Request body: `{ "name": "Tasty Place", "description": "...", "address": "...", "phone": "..." }`
-  - Success (201): Location header points to `/api/restaurants/:id`
+```sh
+docker compose --profile test run --build --rm backend-tests
+```
 
-- GET /api/restaurants/:restaurant_Id
-  - Returns: `Restaurant` (200) or 404 (Not found)
+The tests use Supertest to call the Express app directly inside the test process. They do not send requests to the running backend container, so test-created users, restaurants, products, and orders stay in the test process's in-memory database. When the test process exits, that test data is discarded; it does not dirty or change a separately running backend container.
 
-- PATCH /api/restaurants/:restaurant_Id
-  - Body: fields to update (name/description/address/phone)
-  - Success: 204 No Content
+The backend itself also uses an in-memory database. Its data lasts only while that backend process is running and is cleared when the backend container is recreated.
 
-- DELETE /api/restaurants/:restaurant_id
-  - Success: 204 No Content
+## Stop the web services
 
-Products
+Stop and remove the frontend and backend containers:
 
-- GET /api/restaurants/:restaurant_Id/products
-  - Returns: `[ Product, ... ]` (200)
+```sh
+docker compose down
+```
 
-- POST /api/restaurants/:restaurant_Id/products
-  - Create product
-  - Body: `{ "name": "Burger", "price": 5, "description": "..." }`
-  - Success (201): Location header `/api/restaurants/:restaurant_Id/products/:product_Id`
-  - Errors: 400 for invalid price or missing name
+This does not delete source files or Docker images. To stop only one service:
 
-- GET /api/restaurants/:restaurant_Id/products/:product_Id
-  - Returns: `Product` (200)
+```sh
+docker compose stop frontend
+docker compose stop backend
+```
 
-- PATCH /api/restaurants/:restaurant_Id/products/:product_Id
-  - Body: partial product object (name/description/price)
-  - Success: 204 No Content
+## C++ recommendation server
 
-- DELETE /api/restaurants/:restaurant_Id/products/:product_Id
-  - Success: 204 No Content
-
-Orders
-
-- GET /api/orders
-  - Returns orders for the current user
-  - Response: `[ Order, ... ]` (200)
-
-- POST /api/orders
-  - Create order for the current user
-  - Request body:
-    {
-      "userId": "user_...",
-      "restaurantId": "rest_...",
-      "items": [ { "productId": "prod_...", "quantity": 2 }, ... ]
-    }
-  - Success (201): Location header `/api/orders/:Order_id` with empty body
-  - Errors: 400 for missing restaurantId or empty items or empty userId
-
-- GET /api/orders/:Order_Id
-  - Returns: `Order` (200) or 404
-
-- PATCH /api/orders/:Order_Id
-  - Update order . Supported fields: `status` and `items`
-  - Success: 204 No Content
-
-- DELETE /api/orders/:Order_Id
-  - Success: 204 No Content
-
-Search
-
-- GET /api/search/:query
-  - Returns: `{ "restaurants": [...], "products": [...] }` (200)
-
-
-## Notes
-
-- All Docker Compose commands require a profile: `dev` (servers), `api` (servers + API tests), `unit` (C++ tests), or `full` (everything).
-- Use `--profile dev up` for fast startup.
-- Use `--profile full up` to run the complete test suite.
+This Compose setup is for `src/web` only. It does not build or start the C++ server or the separate TCP client.
