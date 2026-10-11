@@ -1,121 +1,80 @@
 # Wolt Clone — Web Application
 
-This project runs the web application in `src/web`:
+This guide contains the six commands for running and removing the web application with Docker Compose. Run them from the repository root, where `docker-compose.yml` is located.
 
-- **Frontend:** React single-page application.
-- **Backend:** Node.js/Express REST API.
-- **Backend tests:** Mocha and Supertest tests run in temporary container.
-
-The commands in this guide use Docker only. Run them from the repository root, where `docker-compose.yml` and `.env` are located.
-
-## Ports
-
-Change the ports in the root `.env` file if needed:
-
-```dotenv
-FRONTEND_PORT=3001
-BACKEND_PORT=3000
-```
-
-- `FRONTEND_PORT` is the host port for the website.
-- `BACKEND_PORT` is the host and container port for the API.
-
-The frontend image is built with the API address `http://localhost:<BACKEND_PORT>`. Rebuild the images after changing either port.
-
-## Before starting: clean up this project's old containers
-
-If you have run an older version of this project, first run:
-
-```sh
-docker compose down --remove-orphans
-```
-
-This stops and removes containers belonging to this Compose project, including old project services no longer listed in the current Compose file. It doesn't remove unrelated containers from other projects, and it does not delete project source files.
-
-Then inspect running containers and their published ports:
-
-```sh
-docker ps --format "table {{.Names}}\t{{.Ports}}"
-```
-
-If another container is using one of this project's ports, either change the corresponding value in `.env`, or stop that specific container only after confirming it is safe to stop:
-
-```sh
-docker stop <container-name-or-id>
-```
-
-Do not remove or stop every Docker container just to resolve a port conflict; an unrelated container may belong to another project or user.
-
-## Build the images
-
-Build both web service images:
-
-```sh
-docker compose --profile app build
-```
-
-The backend image contains the Node.js API. The frontend image first builds the React app, then copies its static output into an Nginx image.
-
-Build just one service if needed:
-
-```sh
-docker compose --profile backend build backend
-docker compose --profile frontend build frontend
-```
-
-## Start services separately or together
-
-### Frontend only
-
-```sh
-docker compose --profile frontend up --build -d frontend
-```
-
-The website files load at `http://localhost:<FRONTEND_PORT>`. The frontend can be viewed without the backend, but API-dependent features such as login, registration, restaurant data, and orders will not work.
-
-### Backend only
-
-```sh
-docker compose --profile backend up --build -d backend
-```
-
-The API is available at `http://localhost:<BACKEND_PORT>`. Check that it is responding at `http://localhost:<BACKEND_PORT>/api/health`.
-
-### Frontend and backend together (normal app use)
+## Start Both Frontend and Backend
 
 ```sh
 docker compose --profile app up --build -d
 ```
 
-This starts both services. Use this option for normal app functionality: the browser loads the frontend, and the frontend sends API requests to the backend.
+![alt text](photos_for_readme/photo_start.png)
 
-## Run backend tests
+Builds the Frontend and Backend images if needed, then creates and starts both containers in the background.
 
-Run the test suite in Docker:
+- Frontend: <http://localhost:3001>
+- Backend health check: <http://localhost:3000/api/health>
+
+## Start Only the Backend
+
+```sh
+docker compose --profile backend up --build -d backend
+```
+
+Builds the Backend image if needed, then creates and starts the Backend container in the background. It does not stop a Frontend container that is already running.
+
+## Start Only the Frontend
+
+```sh
+docker compose --profile frontend up --build -d frontend
+```
+
+Builds the Frontend image if needed, then creates and starts the Frontend container in the background. It does not stop a Backend container that is already running. Without the Backend, API-dependent features such as login, restaurants, and orders will not work.
+
+## Run Backend Tests
 
 ```sh
 docker compose --profile test run --build --rm backend-tests
 ```
 
-The tests use Supertest to call the Express app directly inside the test process. They do not send requests to the running backend container, so test-created users, restaurants, products, and orders stay in the test process's in-memory database. When the test process exits, that test data is discarded; it does not dirty or change a separately running backend container.
+![alt text](photos_for_readme/photo_test.png)
 
-The backend itself also uses an in-memory database. Its data lasts only while that backend process is running and is cleared when the backend container is recreated.
+Builds the test image if needed, runs the Backend test suite in a temporary container, and removes that container when the tests finish. This runs tests only; it does not start or stop the regular Backend or Frontend services. The tests use an in-memory database, so test data is discarded when the test process exits.
 
-## Stop the web services
-
-Stop and remove the frontend and backend containers:
+## Stop and Remove Both Services
 
 ```sh
-docker compose down
+docker compose --profile app down --rmi local
 ```
 
-This does not delete source files or Docker images. To stop only one service:
+![alt text](photos_for_readme/photo_stop.png)
+
+Stops and removes both application containers and the Compose network. `--rmi local` also removes the locally built Frontend and Backend images. It does not remove source files.
+
+## Stop and Remove Only the Frontend
 
 ```sh
-docker compose stop frontend
-docker compose stop backend
+docker compose --profile frontend rm --stop --force frontend && docker image rm wolt-frontend:latest
 ```
 
-## C++ recommendation server
+Stops and removes the Frontend container, then removes its local Docker image. It leaves the Backend running.
 
-This Compose setup is for `src/web` only. It does not build or start the C++ server or the separate TCP client.
+## Stop and Remove Only the Backend
+
+```sh
+docker compose --profile backend rm --stop --force backend && docker image rm wolt-backend:latest
+```
+
+Stops and removes the Backend container, then removes its local Docker image. It leaves the Frontend running.
+
+## Image and Container
+
+An **image** is the built template used to create a service. A **container** is an instance of that image that Docker has created and can run.
+
+The start commands use `up --build`: Docker builds or updates the image, then creates and starts the container. The remove commands delete the selected container and its image. If an image is still used by another container, Docker may refuse to remove that image until the other container is removed.
+
+## Ports
+
+The default ports are `3001` for the Frontend and `3000` for the Backend. To change them, edit `FRONTEND_PORT` or `BACKEND_PORT` in the root `.env` file. Since the Frontend image includes the Backend address at build time, run the relevant start command with `--build` after changing a port.
+
+This Compose setup runs only the web application in `src/web`. It does not build or start the separate C++ recommendation server or TCP client.
