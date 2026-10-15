@@ -106,12 +106,15 @@ export default function ManageRestaurantScreen() {
     setActionError('');
     const isCurrent = () => requestRef.current === request && version === versionRef.current && sameSession();
     try {
-      const permission = camera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!isCurrent()) return;
-      if (!permission.granted) {
-        setActionError(camera ? 'Allow camera access in your phone settings to take a picture.' : 'Allow photo access in your phone settings to choose a picture.');
-        return;
+      if (camera) {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!isCurrent()) return;
+        if (!permission.granted) {
+          setActionError('Allow camera access in your phone settings to take a picture.');
+          return;
+        }
       }
+      // The gallery uses the system chooser without requesting broad photo access.
       const selection = camera ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS) : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
       if (!isCurrent() || selection.canceled) return;
       const asset = selection.assets?.[0];
