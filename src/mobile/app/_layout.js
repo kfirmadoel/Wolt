@@ -92,6 +92,8 @@ function AppDrawer() {
         <Drawer.Screen name="orders" options={{ drawerLabel: 'Order history', title: 'Your orders' }} />
         <Drawer.Screen name="my-restaurants" options={{ drawerLabel: 'My restaurants', title: 'My restaurants', drawerItemStyle: profile?.id === userId && profile?.role === 'restaurant_owner' ? undefined : { display: 'none' } }} />
         <Drawer.Screen name="manage-restaurant" options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="manage-menu" options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="manage-product" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="order/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="restaurant/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="login" options={authScreenOptions} />

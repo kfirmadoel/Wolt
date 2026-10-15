@@ -14,7 +14,7 @@ const create = async (restaurantId, data) => {
     const product = new Product({
         id: newId,
         restaurantId,
-        name: data.name,
+        name: data.name.trim(),
         description: data.description || "",
         category: data.category || "",
         picture: data.picture || "",
@@ -26,7 +26,7 @@ const create = async (restaurantId, data) => {
 
 const updateProduct = async (pId, restaurantId, data) => {
     const update = {};
-    if (data.name !== undefined) update.name = data.name;
+    if (data.name !== undefined) update.name = data.name.trim();
     if (data.description !== undefined) update.description = data.description;
     if (data.category !== undefined) update.category = data.category;
     if (data.picture !== undefined) update.picture = data.picture;

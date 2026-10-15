@@ -61,6 +61,7 @@ export default function MyRestaurantsScreen() {
         <View>
           <RestaurantCard restaurant={item} onPress={() => openRestaurant(item.id)} />
           <TouchableOpacity onPress={() => openRestaurant(item.id)} style={styles.editButton}><Text style={styles.link}>Edit {item.name}</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push({ pathname: '/manage-menu', params: { restaurantId: item.id, refresh: String(Date.now()) } })} style={styles.editButton}><Text style={styles.link}>Manage menu</Text></TouchableOpacity>
         </View>
       )}
       ListHeaderComponent={

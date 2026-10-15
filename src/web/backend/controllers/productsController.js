@@ -2,20 +2,37 @@
 const productService = require('../services/productService');
 const tcpClient = require('../services/tcpClient');
 
+const validateProduct = (data, partial = false) => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        return "Request body must be an object";
+    }
+    if ((!partial || data.name !== undefined) && (typeof data.name !== 'string' || !data.name.trim())) {
+        return "Name is required";
+    }
+    if ((!partial || data.price !== undefined) && (!Number.isFinite(data.price) || data.price <= 0)) {
+        return "Price must be a number greater than 0";
+    }
+    if (data.description !== undefined && typeof data.description !== 'string') {
+        return "Description must be a string";
+    }
+    if (data.category !== undefined && typeof data.category !== 'string') {
+        return "Category must be a string";
+    }
+    if (data.picture !== undefined && typeof data.picture !== 'string') {
+        return "Picture must be a string";
+    }
+    return null;
+};
+
 const getAllProducts = async (req, res) => {
     const products = await productService.getAllByRestaurant(req.params.id);
     res.status(200).json(products);
 };
 
 const createProduct = async (req, res) => {
-    if (!req.body.name || !req.body.price || req.body.price <= 0) {
-        return res.status(400).json({ error: "Name and a valid price greater than 0 are required" });
-    }
-    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
-        return res.status(400).json({ error: "Category must be a string" });
-    }
-    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
-        return res.status(400).json({ error: "Picture must be a string" });
+    const error = validateProduct(req.body);
+    if (error) {
+        return res.status(400).json({ error });
     }
 
     const newProduct = await productService.create(req.params.id, req.body);
@@ -43,17 +60,9 @@ const getProductById = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
-    if (req.body.name !== undefined && req.body.name.trim() === "") {
-        return res.status(400).json({ error: "Name cannot be empty" });
-    }
-    if (req.body.price !== undefined && req.body.price <= 0) {
-        return res.status(400).json({ error: "Price must be greater than 0" });
-    }
-    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
-        return res.status(400).json({ error: "Category must be a string" });
-    }
-    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
-        return res.status(400).json({ error: "Picture must be a string" });
+    const error = validateProduct(req.body, true);
+    if (error) {
+        return res.status(400).json({ error });
     }
 
     const product = await productService.updateProduct(req.params.pId, req.params.id, req.body);
