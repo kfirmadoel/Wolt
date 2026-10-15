@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
@@ -11,12 +11,16 @@ const emptyCart = (ownerId) => ({
 });
 
 export function CartProvider({ children }) {
-    const { userId } = useAuth();
+    const { userId, token } = useAuth();
     const [cart, setCart] = useState(() => emptyCart(userId));
+    const [checkoutPending, setCheckoutPending] = useState(false);
+    const checkoutRef = useRef(null);
 
     useEffect(() => {
         setCart((current) => current.ownerId === userId ? current : emptyCart(userId));
-    }, [userId]);
+        checkoutRef.current = null;
+        setCheckoutPending(false);
+    }, [userId, token]);
 
     const addItem = useCallback((restaurant, product) => {
         setCart((current) => {
@@ -58,11 +62,29 @@ export function CartProvider({ children }) {
 
     const clearCart = useCallback(() => setCart(emptyCart(userId)), [userId]);
 
+    const beginCheckout = useCallback(() => {
+        if (checkoutRef.current || !token || cart.ownerId !== userId || !cart.restaurantId || cart.items.length === 0) return null;
+        const submission = { cart, userId, token };
+        checkoutRef.current = submission;
+        setCheckoutPending(true);
+        return submission;
+    }, [cart, userId, token]);
+
+    const finishCheckout = useCallback((submission, succeeded = false) => {
+        if (checkoutRef.current !== submission) return;
+        if (succeeded) {
+            // A response for an older cart must not clear dishes added later.
+            setCart((current) => current === submission.cart ? emptyCart(current.ownerId) : current);
+        }
+        checkoutRef.current = null;
+        setCheckoutPending(false);
+    }, []);
+
     const value = useMemo(() => {
         const itemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
         const total = cart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
-        return { ...cart, itemCount, total, addItem, changeQuantity, removeItem, clearCart };
-    }, [cart, addItem, changeQuantity, removeItem, clearCart]);
+        return { ...cart, itemCount, total, addItem, changeQuantity, removeItem, clearCart, checkoutPending, beginCheckout, finishCheckout };
+    }, [cart, addItem, changeQuantity, removeItem, clearCart, checkoutPending, beginCheckout, finishCheckout]);
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -5,40 +5,56 @@ import { useCart } from '../context/CartContext';
 import '../css/Commerce.css';
 
 function CartPage() {
-    const { restaurantId, restaurantName, items, total, changeQuantity, removeItem, clearCart } = useCart();
-    const [submitting, setSubmitting] = useState(false);
+    const { restaurantName, items, total, changeQuantity, removeItem, checkoutPending, beginCheckout, finishCheckout } = useCart();
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const headingRef = useRef(null);
+    const mountedRef = useRef(false);
 
     useEffect(() => {
+        mountedRef.current = true;
         headingRef.current?.focus();
+        return () => { mountedRef.current = false; };
     }, []);
 
     const submitOrder = async () => {
-        if (!restaurantId || items.length === 0) return;
-        setSubmitting(true);
+        const submission = beginCheckout();
+        if (!submission) return;
+        const sameSession = () => localStorage.getItem('token') === submission.token && localStorage.getItem('userId') === submission.userId;
+        if (!sameSession()) {
+            finishCheckout(submission);
+            return;
+        }
         setError('');
         try {
             const response = await apiFetch('/api/orders', {
                 method: 'POST',
                 body: JSON.stringify({
-                    restaurantId,
-                    items: items.map(({ product, quantity }) => ({ productId: product.id, quantity }))
+                    restaurantId: submission.cart.restaurantId,
+                    items: submission.cart.items.map(({ product, quantity }) => ({ productId: product.id, quantity }))
                 })
             });
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
-                throw new Error(data.error || 'Could not submit your order.');
+                const requestError = new Error(data.error || 'Could not submit your order.');
+                requestError.status = response.status;
+                throw requestError;
             }
 
             const order = await response.json();
-            clearCart();
-            navigate('/orders', { replace: true, state: { orderConfirmation: `Order ${order.id} was placed successfully.` } });
+            if (!order.id) throw new Error('Order confirmation is missing.');
+            if (sameSession()) {
+                finishCheckout(submission, true);
+                if (mountedRef.current) {
+                    navigate('/orders', { replace: true, state: { orderUserId: submission.userId, orderConfirmation: `Order ${order.id} was placed successfully.` } });
+                }
+            }
         } catch (requestError) {
-            setError(requestError.message || 'Could not reach the server. Please try again.');
+            if (mountedRef.current && sameSession()) {
+                setError(requestError.status ? requestError.message : 'Could not confirm whether the order was placed. Check order history before trying again.');
+            }
         } finally {
-            setSubmitting(false);
+            finishCheckout(submission);
         }
     };
 
@@ -73,11 +89,11 @@ function CartPage() {
                                 </div>
                                 <div className="cart-item-controls">
                                     <div className="quantity-control" aria-label={`Quantity for ${product.name}`}>
-                                        <button type="button" onClick={() => changeQuantity(product.id, -1)} aria-label={`Decrease ${product.name} quantity`}>−</button>
+                                        <button type="button" disabled={checkoutPending} onClick={() => changeQuantity(product.id, -1)} aria-label={`Decrease ${product.name} quantity`}>−</button>
                                         <span>{quantity}</span>
-                                        <button type="button" onClick={() => changeQuantity(product.id, 1)} aria-label={`Increase ${product.name} quantity`}>+</button>
+                                        <button type="button" disabled={checkoutPending} onClick={() => changeQuantity(product.id, 1)} aria-label={`Increase ${product.name} quantity`}>+</button>
                                     </div>
-                                    <button type="button" className="commerce-remove-btn" onClick={() => removeItem(product.id)}>Remove</button>
+                                    <button type="button" className="commerce-remove-btn" disabled={checkoutPending} onClick={() => removeItem(product.id)}>Remove</button>
                                 </div>
                                 <strong className="cart-line-total">₪{(Number(product.price) * quantity).toFixed(2)}</strong>
                             </article>
@@ -89,8 +105,8 @@ function CartPage() {
                         <div className="cart-summary-line"><span>Items</span><span>{items.reduce((count, item) => count + item.quantity, 0)}</span></div>
                         <div className="cart-summary-total"><span>Total</span><strong>₪{total.toFixed(2)}</strong></div>
                         {error && <p className="commerce-error" role="alert">{error}</p>}
-                        <button type="button" className="commerce-primary-button" disabled={submitting} onClick={submitOrder}>
-                            {submitting ? 'Placing order...' : 'Place order'}
+                        <button type="button" className="commerce-primary-button" disabled={checkoutPending} onClick={submitOrder}>
+                            {checkoutPending ? 'Placing order...' : 'Place order'}
                         </button>
                     </aside>
                 </div>

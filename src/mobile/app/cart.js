@@ -64,6 +64,7 @@ export default function CartScreen() {
   const feedback = result && result.userId === userId && result.token === token &&
     (result.order ? items.length === 0 : result.items === items) ? result : null;
   const pending = submitting && requestRef.current?.userId === userId && requestRef.current?.token === token;
+  const openOrders = () => router.push({ pathname: '/orders', params: { refresh: String(Date.now()) } });
 
   if (!token || !userId) {
     return (
@@ -88,11 +89,13 @@ export default function CartScreen() {
       ListHeaderComponent={
         <View>
           <Text style={styles.title}>Your cart</Text>
+          <TouchableOpacity onPress={openOrders} disabled={pending} style={styles.restaurantLink}><Text style={styles.link}>Order history</Text></TouchableOpacity>
           {feedback?.order ? (
             <View style={styles.confirmation}>
               <Text style={styles.success}>Order placed</Text>
               <Text style={styles.message}>Order {feedback.order.id}</Text>
               <Text style={styles.heading}>Total: ₪{feedback.order.totalPrice.toFixed(2)}</Text>
+              <TouchableOpacity onPress={() => router.push({ pathname: '/order/[id]', params: { id: feedback.order.id, refresh: String(Date.now()) } })} style={styles.restaurantLink}><Text style={styles.link}>View order details</Text></TouchableOpacity>
             </View>
           ) : null}
           {restaurantId ? (
@@ -117,6 +120,7 @@ export default function CartScreen() {
           <View style={styles.summaryRow}><Text style={styles.message}>Items</Text><Text style={styles.message}>{itemCount}</Text></View>
           <View style={styles.summaryRow}><Text style={styles.heading}>Total</Text><Text style={styles.heading}>₪{total.toFixed(2)}</Text></View>
           {feedback?.error ? <Text style={styles.error}>{feedback.error}</Text> : null}
+          {feedback?.error ? <TouchableOpacity onPress={openOrders} style={styles.restaurantLink}><Text style={styles.link}>Check order history</Text></TouchableOpacity> : null}
           <TouchableOpacity onPress={submitOrder} disabled={pending} style={[styles.button, styles.checkoutButton, pending && styles.disabled]} accessibilityRole="button">
             {pending ? <ActivityIndicator color="#002a33" /> : null}
             <Text style={styles.buttonText}>{pending ? 'Placing order...' : 'Place order'}</Text>

@@ -89,6 +89,8 @@ function AppDrawer() {
       >
         <Drawer.Screen name="index" options={{ drawerLabel: 'Restaurants', title: 'Wolt Clone' }} />
         <Drawer.Screen name="cart" options={{ drawerLabel: `Cart (${itemCount})`, title: 'Your cart' }} />
+        <Drawer.Screen name="orders" options={{ drawerLabel: 'Order history', title: 'Your orders' }} />
+        <Drawer.Screen name="order/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="restaurant/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="login" options={authScreenOptions} />
         <Drawer.Screen name="register" options={authScreenOptions} />
