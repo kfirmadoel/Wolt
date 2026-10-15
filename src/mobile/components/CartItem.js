@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
-export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
+export default function CartItem({ item, onIncrease, onDecrease, onRemove, disabled = false }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { product, quantity } = item;
@@ -17,17 +17,17 @@ export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
           <Text style={styles.lineTotal}>₪{(Number(product.price) * quantity).toFixed(2)}</Text>
         </View>
       </View>
-      <View style={styles.actions}>
+      <View style={[styles.actions, disabled && styles.disabled]}>
         <View style={styles.quantity}>
-          <TouchableOpacity onPress={onDecrease} style={styles.quantityButton} accessibilityRole="button" accessibilityLabel={`Decrease ${product.name} quantity`}>
+          <TouchableOpacity onPress={onDecrease} disabled={disabled} style={styles.quantityButton} accessibilityRole="button" accessibilityLabel={`Decrease ${product.name} quantity`}>
             <Text style={styles.quantityText}>−</Text>
           </TouchableOpacity>
           <Text style={styles.count}>{quantity}</Text>
-          <TouchableOpacity onPress={onIncrease} style={styles.quantityButton} accessibilityRole="button" accessibilityLabel={`Increase ${product.name} quantity`}>
+          <TouchableOpacity onPress={onIncrease} disabled={disabled} style={styles.quantityButton} accessibilityRole="button" accessibilityLabel={`Increase ${product.name} quantity`}>
             <Text style={styles.quantityText}>+</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={onRemove} style={styles.remove} accessibilityRole="button" accessibilityLabel={`Remove ${product.name}`}>
+        <TouchableOpacity onPress={onRemove} disabled={disabled} style={styles.remove} accessibilityRole="button" accessibilityLabel={`Remove ${product.name}`}>
           <Text style={styles.removeText}>Remove</Text>
         </TouchableOpacity>
       </View>
@@ -50,4 +50,5 @@ const createStyles = (colors) => StyleSheet.create({
   count: { color: colors.text, minWidth: 28, textAlign: 'center', fontWeight: 'bold' },
   remove: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 10 },
   removeText: { color: colors.error, fontWeight: 'bold' },
+  disabled: { opacity: 0.5 },
 });

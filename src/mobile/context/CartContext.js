@@ -73,9 +73,12 @@ export function CartProvider({ children }) {
     });
   };
 
-  const clearCart = () => {
+  const clearCart = (expectedItems) => {
     changeVersion.current += 1;
-    setCart((current) => current.ownerId === userId ? emptyCart(userId) : current);
+    setCart((current) => {
+      if (current.ownerId !== userId || (expectedItems && current.items !== expectedItems)) return current;
+      return emptyCart(userId);
+    });
   };
 
   const itemCount = currentCart.items.reduce((count, item) => count + item.quantity, 0);
