@@ -137,11 +137,14 @@ export default function RegisterScreen() {
       <InputField placeholder="Display name *" value={name} onChangeText={setName} error={show('name')} />
 
       <View style={styles.row}>
-        <InputField placeholder="Latitude *" value={latitude} onChangeText={setLatitude} keyboardType="numeric"
-          style={{ flex: 1 }} error={show('latitude')} />
-        <View style={{ width: 10 }} />
-        <InputField placeholder="Longitude *" value={longitude} onChangeText={setLongitude} keyboardType="numeric"
-          style={{ flex: 1 }} error={show('longitude')} />
+        <View style={styles.coordinateField}>
+          <InputField placeholder="Latitude *" value={latitude} onChangeText={setLatitude} keyboardType="numeric"
+            error={show('latitude')} />
+        </View>
+        <View style={styles.coordinateField}>
+          <InputField placeholder="Longitude *" value={longitude} onChangeText={setLongitude} keyboardType="numeric"
+            error={show('longitude')} />
+        </View>
       </View>
       <Text style={styles.hint}>Coordinates are used to sort nearby restaurants.</Text>
 
@@ -176,7 +179,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: COLORS.primary },
   errorText: { color: COLORS.error, marginBottom: 15, textAlign: 'center', fontWeight: 'bold' },
   fieldError: { color: COLORS.error, fontSize: 12, marginBottom: 10, paddingLeft: 5 },
-  row: { flexDirection: 'row' },
+  row: { flexDirection: 'row', gap: 10 },
+  coordinateField: { flex: 1, minWidth: 0 },
   hint: { fontSize: 12, color: 'gray', marginBottom: 15, textAlign: 'center' },
   imageButton: { height: 50, borderWidth: 1, borderColor: COLORS.primary, borderStyle: 'dashed', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   imageButtonText: { color: COLORS.primary, fontWeight: 'bold' },
