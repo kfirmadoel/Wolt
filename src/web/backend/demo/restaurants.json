@@ -1,0 +1,68 @@
+[
+    {
+        "name": "Basil Pizza",
+        "description": "Fresh pizza, tomato sauce and melted mozzarella.",
+        "category": "Pizza",
+        "isPromoted": true,
+        "picture": "pizza.jpg",
+        "products": [
+            { "name": "Margherita Pizza", "description": "Tomato sauce and mozzarella on a thin, crisp base.", "category": "Pizza", "price": 42, "picture": "pizza.jpg" },
+            { "name": "Caesar Salad", "description": "Crisp lettuce, croutons, parmesan and Caesar dressing.", "category": "Salads", "price": 32, "picture": "salad.jpg" }
+        ]
+    },
+    {
+        "name": "Corner Burger",
+        "description": "Cheeseburgers and fries, made to order.",
+        "category": "Burgers",
+        "isPromoted": true,
+        "picture": "burger.jpg",
+        "products": [
+            { "name": "Cheeseburger and Fries", "description": "Beef burger with cheese, lettuce and a side of fries.", "category": "Burgers", "price": 58, "picture": "burger.jpg" },
+            { "name": "Caesar Salad", "description": "Lettuce, parmesan and crunchy croutons with Caesar dressing.", "category": "Salads", "price": 34, "picture": "salad.jpg" }
+        ]
+    },
+    {
+        "name": "Nori Sushi",
+        "description": "Freshly rolled sushi to share with friends.",
+        "category": "Sushi",
+        "isPromoted": false,
+        "picture": "sushi.jpg",
+        "products": [
+            { "name": "Sushi Platter", "description": "A selection of 16 rolls, served with ginger and wasabi.", "category": "Platters", "price": 76, "picture": "sushi.jpg" },
+            { "name": "Party Platter", "description": "A selection of 32 rolls for sharing, with ginger and wasabi.", "category": "Platters", "price": 138, "picture": "sushi.jpg" }
+        ]
+    },
+    {
+        "name": "Cafe Noya",
+        "description": "Good coffee and a pastry for your morning break.",
+        "category": "Drinks",
+        "isPromoted": false,
+        "picture": "coffee.jpg",
+        "products": [
+            { "name": "Cappuccino", "description": "Espresso with steamed milk and a soft layer of foam.", "category": "Coffee", "price": 16, "picture": "coffee.jpg" },
+            { "name": "Cream Croissant", "description": "Golden pastry with a creamy filling and sesame topping.", "category": "Pastries", "price": 20, "picture": "croissant.jpg" }
+        ]
+    },
+    {
+        "name": "Morning Bakery",
+        "description": "Golden pastries, fresh from the oven.",
+        "category": "Bakery",
+        "isPromoted": false,
+        "picture": "croissant.jpg",
+        "products": [
+            { "name": "Cream Croissant", "description": "A soft, golden pastry with cream and sesame seeds.", "category": "Pastries", "price": 18, "picture": "croissant.jpg" },
+            { "name": "Cappuccino", "description": "Espresso and steamed milk, served hot.", "category": "Coffee", "price": 15, "picture": "coffee.jpg" }
+        ]
+    },
+    {
+        "name": "Green Bowl",
+        "description": "Fresh salads for a light lunch.",
+        "category": "Salads",
+        "isPromoted": false,
+        "picture": "salad.jpg",
+        "products": [
+            { "name": "Caesar Salad", "description": "Lettuce, tomato, croutons and parmesan with Caesar dressing.", "category": "Salads", "price": 38, "picture": "salad.jpg" },
+            { "name": "Caesar Salad for Two", "description": "A larger portion of our Caesar salad, made for sharing.", "category": "Salads", "price": 62, "picture": "salad.jpg" }
+        ]
+    }
+]
