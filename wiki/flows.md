@@ -97,6 +97,10 @@ The customer then selected **Place order**. The website displayed a success mess
 
 Expo Go was connected to the same Compose API on **3002** and Metro on **8082**. Logging in as Dana Amir and opening order history showed both Olive Pizza orders, including the new entry at 21:40:53 for ₪42.00. This native history check was observed but not captured. It verifies reading the order placed on the website, not submitting an order from mobile against Compose.
 
+The following native capture shows the guest home in that Compose environment. **Olive Pizza** appears under **Promoted restaurants** with its picture, Pizza category and description. **All categories** is selected and **Log in** is visible. This records the loaded guest home; it does not show a search, login or checkout action.
+
+<img src="images/ex5-part3-compose-mobile-home.png" alt="Native guest home connected to Compose showing Olive Pizza as a promoted restaurant with its picture and Pizza category" width="320">
+
 ## Mobile registration validation
 
 The registration screen was checked in Expo Go against the rebuilt Compose mobile service. Submitting an empty form displayed required-field and password feedback. The latitude and longitude messages wrapped fully within their respective columns after the layout correction.
