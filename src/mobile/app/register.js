@@ -57,12 +57,11 @@ export default function RegisterScreen() {
   };
 
   const pickFromGallery = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert('Permission needed', 'Allow photo access in your phone settings to choose a picture.');
-      return;
+    try {
+      handleResult(await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS));
+    } catch (err) {
+      Alert.alert('Picture error', 'Could not open the picture. Please try again.');
     }
-    handleResult(await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS));
   };
 
   const takePhoto = async () => {
