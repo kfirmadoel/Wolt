@@ -25,7 +25,7 @@ const create = async (data) => {
 const getById = async (id) => {
     const user = await User.findOne({ id });
     if (!user) return null;
-    const { password, phone, address, role, ...safeUser } = user.toObject();
+    const { password, phone, address, ...safeUser } = user.toObject();
     return safeUser;
 };
 

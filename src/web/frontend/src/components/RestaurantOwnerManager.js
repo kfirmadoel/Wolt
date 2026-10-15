@@ -51,7 +51,7 @@ function RestaurantOwnerManager({ user }) {
         longitude: user.location?.y === undefined ? '' : String(user.location.y)
     });
     const [newRestaurantPicture, setNewRestaurantPicture] = useState('');
-    const [productForm, setProductForm] = useState({ name: '', description: '', price: '' });
+    const [productForm, setProductForm] = useState({ name: '', description: '', category: '', price: '', picture: '' });
     const [editingProductId, setEditingProductId] = useState('');
     const [savingProduct, setSavingProduct] = useState(false);
 
@@ -315,14 +315,20 @@ function RestaurantOwnerManager({ user }) {
                 : `/api/restaurants/${selectedRestaurant.id}/products`;
             const response = await apiFetch(path, {
                 method: editingProductId ? 'PATCH' : 'POST',
-                body: JSON.stringify({ name: productForm.name.trim(), description: productForm.description.trim(), price })
+                body: JSON.stringify({
+                    name: productForm.name.trim(),
+                    description: productForm.description.trim(),
+                    category: productForm.category.trim(),
+                    price,
+                    picture: productForm.picture
+                })
             });
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
                 throw new Error(data.error || 'Menu item could not be saved.');
             }
             await loadProducts(selectedRestaurant.id);
-            setProductForm({ name: '', description: '', price: '' });
+            setProductForm({ name: '', description: '', category: '', price: '', picture: '' });
             setEditingProductId('');
             setMenuFeedback({ type: 'success', message: editingProductId ? 'Menu item updated.' : 'Menu item added.' });
         } catch (error) {
@@ -334,7 +340,13 @@ function RestaurantOwnerManager({ user }) {
 
     const handleEditProduct = (product) => {
         setEditingProductId(product.id);
-        setProductForm({ name: product.name, description: product.description || '', price: String(product.price) });
+        setProductForm({
+            name: product.name,
+            description: product.description || '',
+            category: product.category || '',
+            price: String(product.price),
+            picture: product.picture || ''
+        });
         setMenuFeedback(null);
     };
 
@@ -350,7 +362,7 @@ function RestaurantOwnerManager({ user }) {
             setProducts((current) => current.filter((item) => item.id !== product.id));
             if (editingProductId === product.id) {
                 setEditingProductId('');
-                setProductForm({ name: '', description: '', price: '' });
+                setProductForm({ name: '', description: '', category: '', price: '', picture: '' });
             }
             setMenuFeedback({ type: 'success', message: 'Menu item deleted.' });
         } catch (error) {
@@ -443,10 +455,13 @@ function RestaurantOwnerManager({ user }) {
                                 <h5>{editingProductId ? 'Edit menu item' : 'Add menu item'}</h5>
                                 <label className="location-input-group"><span>Name *</span><input className="restaurant-form-control" value={productForm.name} onChange={(event) => setProductForm((current) => ({ ...current, name: event.target.value }))} required /></label>
                                 <label className="location-input-group"><span>Description</span><textarea className="restaurant-form-control" rows="2" value={productForm.description} onChange={(event) => setProductForm((current) => ({ ...current, description: event.target.value }))} /></label>
+                                <label className="location-input-group"><span>Category</span><input className="restaurant-form-control" value={productForm.category} onChange={(event) => setProductForm((current) => ({ ...current, category: event.target.value }))} /></label>
                                 <label className="location-input-group"><span>Price (₪) *</span><input className="restaurant-form-control" type="number" min="0.01" step="0.01" value={productForm.price} onChange={(event) => setProductForm((current) => ({ ...current, price: event.target.value }))} required /></label>
+                                <label className="location-input-group"><span>Dish image (optional)</span><input className="restaurant-form-control" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => readImageFile(event.target.files[0], (picture) => setProductForm((current) => ({ ...current, picture })), (message) => setMenuFeedback(message ? { type: 'error', message } : null))} /></label>
+                                {productForm.picture && <img className="owner-image-preview" src={productForm.picture} alt="Dish preview" />}
                                 <div className="owner-action-row">
                                     <button className="profile-save-btn" type="submit" disabled={savingProduct}>{savingProduct ? 'Saving...' : editingProductId ? 'Save item' : 'Add item'}</button>
-                                    {editingProductId && <button className="owner-secondary-btn" type="button" onClick={() => { setEditingProductId(''); setProductForm({ name: '', description: '', price: '' }); }}>Cancel</button>}
+                                    {editingProductId && <button className="owner-secondary-btn" type="button" onClick={() => { setEditingProductId(''); setProductForm({ name: '', description: '', category: '', price: '', picture: '' }); }}>Cancel</button>}
                                 </div>
                             </form>
                         </div>}
