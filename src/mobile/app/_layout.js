@@ -6,6 +6,7 @@ import { Drawer } from 'expo-router/drawer';
 import { useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { ThemeProvider, useTheme } from '../context/ThemeContext';
+import { CartProvider, useCart } from '../context/CartContext';
 
 const AUTH_SCREENS = ['login', 'register'];
 const PUBLIC_SCREENS = [undefined, 'index', 'search', 'restaurant'];
@@ -13,6 +14,7 @@ const PUBLIC_SCREENS = [undefined, 'index', 'search', 'restaurant'];
 function AppDrawer() {
   const { colors, dark, toggleTheme } = useTheme();
   const { token, loading, signOut, profile } = useAuth();
+  const { itemCount } = useCart();
   const segments = useSegments();
   const router = useRouter();
 
@@ -86,6 +88,7 @@ function AppDrawer() {
         }}
       >
         <Drawer.Screen name="index" options={{ drawerLabel: 'Restaurants', title: 'Wolt Clone' }} />
+        <Drawer.Screen name="cart" options={{ drawerLabel: `Cart (${itemCount})`, title: 'Your cart' }} />
         <Drawer.Screen name="restaurant/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="login" options={authScreenOptions} />
         <Drawer.Screen name="register" options={authScreenOptions} />
@@ -98,7 +101,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppDrawer />
+        <CartProvider>
+          <AppDrawer />
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   );

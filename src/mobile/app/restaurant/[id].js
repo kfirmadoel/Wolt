@@ -6,12 +6,14 @@ import ProductCard from '../../components/ProductCard';
 import LoadMessage from '../../components/LoadMessage';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useCart } from '../../context/CartContext';
 import { getData } from '../../services/api';
 
 export default function RestaurantScreen() {
   const { id, productId } = useLocalSearchParams();
   const { token } = useAuth();
   const { colors } = useTheme();
+  const { addItem, itemCount, total } = useCart();
   const styles = createStyles(colors);
   const listRef = useRef(null);
   const [restaurant, setRestaurant] = useState(null);
@@ -88,10 +90,14 @@ export default function RestaurantScreen() {
       keyExtractor={(item) => item.id}
       refreshing={loading}
       onRefresh={() => setReloadVersion((value) => value + 1)}
-      renderItem={({ item }) => <ProductCard product={item} onPress={() => openProduct(item)} />}
+      renderItem={({ item }) => <ProductCard product={item} onPress={() => openProduct(item)} onAdd={() => addItem(restaurant, item)} />}
       ListHeaderComponent={
         <View>
           <TouchableOpacity onPress={goBack} style={styles.back}><Text style={styles.link}>Back to restaurants</Text></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push(token ? '/cart' : '/login')} style={styles.cartLink}>
+            <Text style={styles.link}>View cart ({itemCount})</Text>
+            <Text style={styles.link}>₪{total.toFixed(2)}</Text>
+          </TouchableOpacity>
           {restaurant ? (
             <>
               {restaurant.picture ? <Image source={{ uri: restaurant.picture }} style={styles.image} /> : null}
@@ -103,7 +109,7 @@ export default function RestaurantScreen() {
               {selectedProductId ? (
                 <View style={styles.productDetails}>
                   <Text style={styles.heading}>Dish details</Text>
-                  {selectedProduct ? <ProductCard product={selectedProduct} /> : <LoadMessage loading={productLoading} error={productError} onRetry={() => setProductVersion((value) => value + 1)} />}
+                  {selectedProduct ? <ProductCard product={selectedProduct} onAdd={() => addItem(restaurant, selectedProduct)} /> : <LoadMessage loading={productLoading} error={productError} onRetry={() => setProductVersion((value) => value + 1)} />}
                   <TouchableOpacity onPress={() => setSelectedProductId(null)} style={styles.back}><Text style={styles.link}>Close details</Text></TouchableOpacity>
                 </View>
               ) : null}
@@ -130,4 +136,5 @@ const createStyles = (colors) => StyleSheet.create({
   details: { color: colors.muted, lineHeight: 21, fontSize: 13 },
   heading: { color: colors.text, fontSize: 21, fontWeight: 'bold', marginTop: 24, marginBottom: 12 },
   productDetails: { marginTop: 8 },
+  cartLink: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderRadius: 10, marginBottom: 18, backgroundColor: colors.selected },
 });
