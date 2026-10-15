@@ -1,7 +1,7 @@
 // app/register.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import InputField from '../components/InputField';
 import { API_URL, COLORS } from '../config.js';
@@ -15,6 +15,8 @@ const PICKER_OPTIONS = {
 };
 
 export default function RegisterScreen() {
+  const segments = useSegments();
+  const isActive = segments[0] === 'register';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,6 +28,11 @@ export default function RegisterScreen() {
   const [submitted, setSubmitted] = useState(false); // show field errors only after first attempt
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setSubmitted(false);
+    setServerError('');
+  }, [isActive]);
 
   // ---- validation (recomputed on every render, so it is live) ----
   const isLongEnough = password.length >= 8;
@@ -45,8 +52,6 @@ export default function RegisterScreen() {
   if (!picture) errors.picture = 'A profile picture is required';
 
   const show = (field) => (submitted ? errors[field] : undefined);
-  // confirm-password mismatch is shown live as soon as the user starts typing it
-  const confirmError = confirmPassword && password !== confirmPassword ? errors.confirmPassword : show('confirmPassword');
 
   // ---- picture: gallery or camera ----
   const handleResult = (result) => {
@@ -115,7 +120,9 @@ export default function RegisterScreen() {
   };
 
   const rule = (ok, text) => (
-    <Text style={{ color: ok ? COLORS.ok : COLORS.error, fontSize: 12 }}>{ok ? '✓' : '✗'} {text}</Text>
+    <Text style={{ color: submitted ? (ok ? COLORS.ok : COLORS.error) : '#777', fontSize: 12 }}>
+      {submitted ? (ok ? '✓ ' : '✗ ') : ''}{text}
+    </Text>
   );
 
   return (
@@ -132,7 +139,7 @@ export default function RegisterScreen() {
       </InputField>
 
       <InputField placeholder="Confirm password *" value={confirmPassword} onChangeText={setConfirmPassword}
-        secureTextEntry error={confirmError} />
+        secureTextEntry error={show('confirmPassword')} />
 
       <InputField placeholder="Display name *" value={name} onChangeText={setName} error={show('name')} />
 

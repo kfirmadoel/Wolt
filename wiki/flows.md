@@ -105,6 +105,8 @@ The following native capture shows the guest home in that Compose environment. *
 
 The registration screen was checked in Expo Go against the rebuilt Compose mobile service. Submitting an empty form displayed required-field and password feedback. The latitude and longitude messages wrapped fully within their respective columns after the layout correction.
 
+Following user testing, password requirements now start in gray without failure marks. Submitting an invalid form displays red errors; corrected password requirements turn green. Leaving and reopening registration clears the previous validation and server errors while preserving the entered values. Eight focused component checks cover this behavior; the screenshot below still shows the state after an invalid submission.
+
 <img src="images/ex5-part3-mobile-registration-validation.png" alt="Mobile registration form with required-field errors and coordinate validation messages contained within both columns" width="320">
 
 This capture contains no entered credentials and demonstrates validation only. Seven automated checks covered the registration picture chooser, including cancellation, failure and camera denial. Those checks do not establish that a complete native registration was performed.
