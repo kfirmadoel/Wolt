@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useSegments } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import RestaurantForm from '../components/RestaurantForm';
 import LoadMessage from '../components/LoadMessage';
@@ -14,6 +14,8 @@ const IMAGE_PATTERN = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$
 export default function ManageRestaurantScreen() {
   const { id, refresh } = useLocalSearchParams();
   const restaurantId = typeof id === 'string' ? id : '';
+  const segments = useSegments();
+  const isActive = segments[0] === 'manage-restaurant';
   const { token, userId, profile, profileError, reloadProfile } = useAuth();
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -28,7 +30,7 @@ export default function ManageRestaurantScreen() {
   const versionRef = useRef(0);
   const requestRef = useRef(null);
   const sessionRef = useRef(null);
-  sessionRef.current = { token, userId, restaurantId, refresh, isOwner };
+  sessionRef.current = { token, userId, restaurantId, refresh, isOwner, isActive };
 
   useEffect(() => {
     const version = ++versionRef.current;
@@ -40,7 +42,7 @@ export default function ManageRestaurantScreen() {
     setPending('');
     setActionError('');
     setResult({ ...scope, loading: true, error: '', categories: [] });
-    if (token && userId && isOwner) {
+    if (token && userId && isOwner && isActive) {
       const load = async () => {
         try {
           if (id !== undefined && typeof id !== 'string') throw new Error('Invalid restaurant ID.');
@@ -72,11 +74,11 @@ export default function ManageRestaurantScreen() {
       load();
     }
     return () => { versionRef.current += 1; requestRef.current = null; };
-  }, [token, userId, isOwner, restaurantId, refresh, reloadVersion]);
+  }, [token, userId, isOwner, restaurantId, refresh, reloadVersion, isActive]);
 
   const sameSession = () => sessionRef.current?.token === token && sessionRef.current?.userId === userId &&
-    sessionRef.current?.restaurantId === restaurantId && sessionRef.current?.refresh === refresh && sessionRef.current?.isOwner === isOwner;
-  const current = result?.token === token && result?.userId === userId && result?.restaurantId === restaurantId && result?.refresh === refresh ? result : null;
+    sessionRef.current?.restaurantId === restaurantId && sessionRef.current?.refresh === refresh && sessionRef.current?.isOwner === isOwner && sessionRef.current?.isActive === isActive;
+  const current = result?.token === token && result?.userId === userId && result?.restaurantId === restaurantId && result?.refresh === refresh && isActive ? result : null;
   const openRestaurants = () => router.replace({ pathname: '/my-restaurants', params: { refresh: String(Date.now()) } });
   const reload = () => { if (!requestRef.current) setReloadVersion((value) => value + 1); };
   const changeField = (field, value) => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import RestaurantCard from '../components/RestaurantCard';
 import CategoryFilter from '../components/CategoryFilter';
 import RestaurantSection from '../components/RestaurantSection';
@@ -16,6 +16,8 @@ export default function RestaurantsScreen() {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { token, profile, profileError, reloadProfile } = useAuth();
+  const segments = useSegments();
+  const isActive = !segments[0] || segments[0] === 'index';
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState('');
@@ -39,6 +41,7 @@ export default function RestaurantsScreen() {
   };
 
   const handleSearch = async (query) => {
+    if (!isActive) return;
     const text = query.trim();
     if (!text) { clearSearch(); return; }
     const requestId = ++searchRequest.current;
@@ -57,6 +60,7 @@ export default function RestaurantsScreen() {
   };
 
   const loadRestaurants = async () => {
+    if (!isActive) return;
     const requestId = ++restaurantsRequest.current;
     setLoading(true);
     setServerError('');
@@ -77,9 +81,11 @@ export default function RestaurantsScreen() {
   };
 
   useEffect(() => {
+    if (!isActive) return;
     loadRestaurants();
-    return () => { restaurantsRequest.current += 1; };
-  }, [token]);
+    if (searchQuery) handleSearch(searchQuery);
+    return () => { restaurantsRequest.current += 1; searchRequest.current += 1; };
+  }, [token, isActive]);
 
   const categories = [...new Set(restaurants.map((restaurant) => restaurant.category).filter(Boolean))].sort();
   const withDistance = restaurants.map((restaurant) => ({ ...restaurant, distance: calculateDistance(restaurant.location, profile?.location) }));

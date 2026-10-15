@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useSegments } from 'expo-router';
 import CategoryFilter from '../../components/CategoryFilter';
 import ProductCard from '../../components/ProductCard';
 import LoadMessage from '../../components/LoadMessage';
@@ -11,6 +11,8 @@ import { getData } from '../../services/api';
 
 export default function RestaurantScreen() {
   const { id, productId } = useLocalSearchParams();
+  const segments = useSegments();
+  const isActive = segments[0] === 'restaurant';
   const { token } = useAuth();
   const { colors } = useTheme();
   const { addItem, itemCount, total } = useCart();
@@ -35,6 +37,7 @@ export default function RestaurantScreen() {
 
   useEffect(() => {
     let active = true;
+    if (!isActive) return;
     const loadMenu = async () => {
       setLoading(true);
       setServerError('');
@@ -57,10 +60,11 @@ export default function RestaurantScreen() {
     };
     loadMenu();
     return () => { active = false; };
-  }, [id, token, reloadVersion]);
+  }, [id, token, reloadVersion, isActive]);
 
   useEffect(() => {
     let active = true;
+    if (!isActive) return;
     setSelectedProduct(null);
     setProductError('');
     if (!selectedProductId) { setProductLoading(false); return; }
@@ -70,7 +74,7 @@ export default function RestaurantScreen() {
       .catch((err) => { if (active) setProductError(err.status === 404 ? 'Dish not found.' : 'Could not load this dish. Please try again.'); })
       .finally(() => { if (active) setProductLoading(false); });
     return () => { active = false; };
-  }, [id, token, selectedProductId, productVersion, reloadVersion]);
+  }, [id, token, selectedProductId, productVersion, reloadVersion, isActive]);
 
   const openProduct = (product) => {
     setSelectedProductId(product.id);

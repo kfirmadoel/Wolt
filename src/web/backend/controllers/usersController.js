@@ -68,9 +68,13 @@ const loginUser = async (req, res) => {
 };
 
 const updateUserLocation = async (req, res) => {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+        return res.status(400).json({ error: "Request body must be an object" });
+    }
     const { location } = req.body;
 
-    if (!location || typeof location.x !== 'number' || typeof location.y !== 'number' ||
+    if (!location || typeof location !== 'object' || Array.isArray(location) ||
+        !Number.isFinite(location.x) || !Number.isFinite(location.y) ||
         location.x < -90 || location.x > 90 || location.y < -180 || location.y > 180) {
         return res.status(400).json({ error: "Location must contain numeric x and y coordinates" });
     }

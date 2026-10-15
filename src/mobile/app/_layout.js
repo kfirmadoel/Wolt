@@ -90,6 +90,7 @@ function AppDrawer() {
         <Drawer.Screen name="index" options={{ drawerLabel: 'Restaurants', title: 'Wolt Clone' }} />
         <Drawer.Screen name="cart" options={{ drawerLabel: `Cart (${itemCount})`, title: 'Your cart' }} />
         <Drawer.Screen name="orders" options={{ drawerLabel: 'Order history', title: 'Your orders' }} />
+        <Drawer.Screen name="profile" options={{ drawerLabel: 'My profile', title: 'My profile' }} />
         <Drawer.Screen name="my-restaurants" options={{ drawerLabel: 'My restaurants', title: 'My restaurants', drawerItemStyle: profile?.id === userId && profile?.role === 'restaurant_owner' ? undefined : { display: 'none' } }} />
         <Drawer.Screen name="manage-restaurant" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="manage-menu" options={{ drawerItemStyle: { display: 'none' } }} />
