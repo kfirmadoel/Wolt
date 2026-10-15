@@ -1,0 +1,8 @@
+build
+data
+.git
+.vscode
+.env
+.env.*
+*.log
+test_*_db.txt

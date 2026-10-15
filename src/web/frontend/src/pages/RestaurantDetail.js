@@ -1,5 +1,5 @@
 // src/pages/RestaurantDetail.js
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiFetch } from '../helper/api';
 import { useCart } from '../context/CartContext';
@@ -12,9 +12,16 @@ function RestaurantDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [cartMessage, setCartMessage] = useState('');
+    const [selectedProductId, setSelectedProductId] = useState('');
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [productLoading, setProductLoading] = useState(false);
+    const [productError, setProductError] = useState('');
+    const menuRequestRef = useRef(0);
+    const productRequestRef = useRef(0);
     const { restaurantId: cartRestaurantId, items: cartItems, itemCount, total, addItem } = useCart();
 
     const fetchDetails = useCallback(async () => {
+        const requestId = ++menuRequestRef.current;
         setLoading(true);
         setError('');
         try {
@@ -29,18 +36,58 @@ function RestaurantDetail() {
                 restaurantResponse.json(),
                 productsResponse.json()
             ]);
-            setRestaurant(restaurantData);
-            setProducts(Array.isArray(productsData) ? productsData : []);
+            if (requestId === menuRequestRef.current) {
+                setRestaurant(restaurantData);
+                setProducts(Array.isArray(productsData) ? productsData : []);
+            }
         } catch (requestError) {
-            setError(requestError.message || 'Could not reach the server.');
+            if (requestId === menuRequestRef.current) setError(requestError.message || 'Could not reach the server.');
         } finally {
-            setLoading(false);
+            if (requestId === menuRequestRef.current) setLoading(false);
         }
     }, [id]);
 
     useEffect(() => {
+        setSelectedProductId('');
+        setSelectedProduct(null);
+        setProductError('');
+        setProductLoading(false);
+        setCartMessage('');
         fetchDetails();
+        return () => {
+            menuRequestRef.current += 1;
+            productRequestRef.current += 1;
+        };
     }, [fetchDetails]);
+
+    const openProduct = async (productId) => {
+        const requestId = ++productRequestRef.current;
+        setSelectedProductId(productId);
+        setSelectedProduct(null);
+        setProductLoading(true);
+        setProductError('');
+        try {
+            const response = await apiFetch(`/api/restaurants/${encodeURIComponent(id)}/products/${encodeURIComponent(productId)}`);
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.error || 'Could not load the dish.');
+            }
+            const data = await response.json();
+            if (requestId === productRequestRef.current) setSelectedProduct(data);
+        } catch (requestError) {
+            if (requestId === productRequestRef.current) setProductError(requestError.message || 'Could not reach the server.');
+        } finally {
+            if (requestId === productRequestRef.current) setProductLoading(false);
+        }
+    };
+
+    const closeProduct = () => {
+        productRequestRef.current += 1;
+        setSelectedProductId('');
+        setSelectedProduct(null);
+        setProductError('');
+        setProductLoading(false);
+    };
 
     const menuGroups = useMemo(() => {
         const groups = new Map();
@@ -110,6 +157,35 @@ function RestaurantDetail() {
                         <h2>Menu</h2>
                         <span>{products.length} {products.length === 1 ? 'item' : 'items'}</span>
                     </div>
+                    {selectedProductId && (
+                        <section className="menu-category" aria-label="Dish details">
+                            <div className="restaurant-menu-heading">
+                                <h3>Dish details</h3>
+                                <button type="button" className="menu-add-button" onClick={closeProduct}>Close details</button>
+                            </div>
+                            {productLoading && <p role="status">Loading dish details...</p>}
+                            {productError && (
+                                <div role="alert">
+                                    <p>{productError}</p>
+                                    <button type="button" className="menu-add-button" onClick={() => openProduct(selectedProductId)}>Try again</button>
+                                </div>
+                            )}
+                            {selectedProduct && (
+                                <article className="menu-product">
+                                    <div className="menu-product-copy">
+                                        <h4>{selectedProduct.name}</h4>
+                                        {selectedProduct.category && <p>{selectedProduct.category}</p>}
+                                        {selectedProduct.description && <p>{selectedProduct.description}</p>}
+                                        <strong>₪{Number(selectedProduct.price).toFixed(2)}</strong>
+                                    </div>
+                                    {selectedProduct.picture && <img src={selectedProduct.picture} alt={selectedProduct.name} className="menu-product-image" />}
+                                    <button type="button" className="menu-add-button" onClick={() => handleAddToCart(selectedProduct)} aria-label={`Add ${selectedProduct.name} to cart`}>
+                                        <span aria-hidden="true">+</span><span>Add</span>
+                                    </button>
+                                </article>
+                            )}
+                        </section>
+                    )}
                     {products.length === 0 ? (
                         <div className="restaurant-menu-empty">
                             <h3>Menu coming soon</h3>
@@ -130,6 +206,7 @@ function RestaurantDetail() {
                                         <button type="button" className="menu-add-button" onClick={() => handleAddToCart(product)} aria-label={`Add ${product.name} to cart`}>
                                             <span aria-hidden="true">+</span><span>Add</span>
                                         </button>
+                                        <button type="button" className="menu-add-button" onClick={() => openProduct(product.id)} aria-label={`View ${product.name} details`}>View details</button>
                                     </article>
                                 ))}
                             </div>

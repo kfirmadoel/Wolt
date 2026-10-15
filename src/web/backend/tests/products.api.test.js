@@ -1,81 +1,91 @@
 const assert = require('assert');
-const request = require('supertest');
-
-const BASE = "http://web-server:3000";
+const { api, auth, createUser, createRestaurant, createProduct, picture, jsonError, empty204 } = require('./helpers');
 
 describe("Products API", () => {
-
-    let restId;
-    let productId;
+    let owner, other, customer, restaurantId, secondRestaurant;
 
     before(async () => {
-        const res = await request(BASE)
-            .post("/api/restaurants")
-            .send({
-                name: "Test Rest",
-                description: "desc",
-                address: "addr",
-                phone: "050-0000000"
-            });
+        owner = await createUser('restaurant_owner');
+        other = await createUser('restaurant_owner');
+        customer = await createUser();
+        restaurantId = await createRestaurant(owner);
+        secondRestaurant = await createRestaurant(owner);
+    });
+    const base = () => `/api/restaurants/${restaurantId}/products`;
 
-        restId = res.headers.location.split("/").pop();
+    it("creates and publicly reads products with valid optional pictures", async () => {
+        const id = await createProduct(owner, restaurantId, { name: '  Product fixture  ' });
+        const detail = await api.get(`${base()}/${id}`).expect(200);
+        assert.strictEqual(detail.body.name, 'Product fixture');
+        assert.strictEqual(detail.body.picture, picture);
+        assert.strictEqual(detail.body.price, 12.5);
+        const list = await api.get(base()).expect(200);
+        assert.ok(list.body.some(product => product.id === id));
     });
 
-    it("12. should create product", async () => {
-        const res = await request(BASE)
-            .post(`/api/restaurants/${restId}/products`)
-            .send({
-                name: "Margherita",
-                description: "Classic tomato & mozzarella",
-                price: 45
-            });
-
-        assert.strictEqual(res.status, 201);
-        productId = res.headers.location.split("/").pop();
+    it("accepts a minimal product without picture, description or category", async () => {
+        const created = await api.post(base()).set(auth(owner)).send({ name: 'Minimal dish', price: 0.01 }).expect(201);
+        const detail = await api.get(created.headers.location).expect(200);
+        assert.strictEqual(detail.body.picture, '');
+        assert.strictEqual(detail.body.description, '');
+        assert.strictEqual(detail.body.category, '');
+        assert.strictEqual(detail.body.price, 0.01);
     });
 
-    it("13. should list products", async () => {
-        const res = await request(BASE)
-            .get(`/api/restaurants/${restId}/products`);
-
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.length, 1);
-    });
-
-    it("14. should get product", async () => {
-        const res = await request(BASE)
-            .get(`/api/restaurants/${restId}/products/${productId}`);
-
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.id, productId);
-        assert.strictEqual(res.body.price, 45);
-    });
-
-    it("15. should update product price", async () => {
-        const res = await request(BASE)
-            .patch(`/api/restaurants/${restId}/products/${productId}`)
-            .send({ price: 49 });
-
-        assert.strictEqual(res.status, 204);
-
-        const check = await request(BASE)
-            .get(`/api/restaurants/${restId}/products/${productId}`);
-        assert.strictEqual(check.body.price, 49);
-    });
-
-    it("16. should delete product", async () => {
-        const res = await request(BASE)
-            .delete(`/api/restaurants/${restId}/products/${productId}`);
-
-        assert.strictEqual(res.status, 204);
-    });
-
-    // CLEANUP - restaurantId-scoped, safe with current models
-    after(async () => {
-        const res = await request(BASE).get(`/api/restaurants/${restId}/products`);
-        for (const p of res.body) {
-            await request(BASE).delete(`/api/restaurants/${restId}/products/${p.id}`);
+    it("blocks missing JWT, customers and different restaurant owners", async () => {
+        const id = await createProduct(owner, restaurantId);
+        jsonError(await api.post(base()).send({ name: 'Unauthorized', price: 10 }), 403);
+        for (const user of [customer, other]) {
+            jsonError(await api.post(base()).set(auth(user)).send({ name: 'Unauthorized', price: 10 }), 403);
+            jsonError(await api.patch(`${base()}/${id}`).set(auth(user)).send({ price: 1 }), 403);
+            jsonError(await api.delete(`${base()}/${id}`).set(auth(user)), 403);
         }
-        await request(BASE).delete(`/api/restaurants/${restId}`);
+        const detail = await api.get(`${base()}/${id}`).expect(200);
+        assert.strictEqual(detail.body.price, 12.5);
+    });
+
+    it("cannot use a product through another restaurant, even with the same owner", async () => {
+        const id = await createProduct(owner, restaurantId);
+        const wrongRoute = `/api/restaurants/${secondRestaurant}/products/${id}`;
+        jsonError(await api.get(wrongRoute), 404);
+        jsonError(await api.patch(wrongRoute).set(auth(owner)).send({ price: 1 }), 404);
+        jsonError(await api.delete(wrongRoute).set(auth(owner)), 404);
+        await api.get(`${base()}/${id}`).expect(200);
+    });
+
+    it("rejects invalid types and prices before writing any part of the product", async () => {
+        const id = await createProduct(owner, restaurantId);
+        const before = await api.get(`${base()}/${id}`);
+        const count = (await api.get(base())).body.length;
+        const invalid = [{ name: ' ' }, { name: [] }, { price: 0 }, { price: -1 }, { price: '30' }, { price: true }, { price: [30] }, { price: null }, { description: null }, { category: [] }, { picture: {} }];
+        for (const fields of invalid) {
+            jsonError(await api.post(base()).set(auth(owner)).send({ name: 'Invalid product', price: 1, ...fields }), 400);
+            jsonError(await api.patch(`${base()}/${id}`).set(auth(owner)).send({ description: 'Must not save', ...fields }), 400);
+        }
+        for (const body of ['null', '[]', '{"name":"Invalid","price":1e309}']) {
+            jsonError(await api.post(base()).set(auth(owner)).set('Content-Type', 'application/json').send(body), 400);
+            jsonError(await api.patch(`${base()}/${id}`).set(auth(owner)).set('Content-Type', 'application/json').send(body), 400);
+        }
+        assert.strictEqual((await api.get(base())).body.length, count);
+        assert.deepStrictEqual((await api.get(`${base()}/${id}`)).body, before.body);
+    });
+
+    it("partially updates allowed fields and can remove an optional image", async () => {
+        const id = await createProduct(owner, restaurantId);
+        const before = await api.get(`${base()}/${id}`);
+        empty204(await api.patch(`${base()}/${id}`).set(auth(owner)).send({ price: 25, picture: '', restaurantId: secondRestaurant, id: 'forged' }));
+        const after = await api.get(`${base()}/${id}`).expect(200);
+        assert.strictEqual(after.body.price, 25);
+        assert.strictEqual(after.body.picture, '');
+        for (const field of ['id', 'restaurantId', 'name', 'description', 'category']) assert.strictEqual(after.body[field], before.body[field]);
+    });
+
+    it("deletes a product with an empty 204 and returns 404 afterwards", async () => {
+        const id = await createProduct(owner, restaurantId);
+        empty204(await api.delete(`${base()}/${id}`).set(auth(owner)));
+        jsonError(await api.get(`${base()}/${id}`), 404);
+        jsonError(await api.delete(`${base()}/${id}`).set(auth(owner)), 404);
+        const list = await api.get(base()).expect(200);
+        assert.ok(!list.body.some(product => product.id === id));
     });
 });

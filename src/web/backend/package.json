@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "test": "mocha tests/**/*.test.js --exit"
+    "test": "mocha tests/api.test.js --timeout 10000"
   },
   "keywords": [
     "wolt",

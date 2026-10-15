@@ -1,42 +1,37 @@
 const assert = require('assert');
-const request = require('supertest');
+const { api, auth, createUser, createRestaurant, createProduct, empty204 } = require('./helpers');
 
-const BASE = "http://web-server:3000";
-
-// The assignment spec is explicit: http://foo.com/api/search/:query
-// This is a PATH parameter, not a query string (?q=...).
 describe("Search API", () => {
-
-    let restId;
+    let owner, restaurantId, productId;
 
     before(async () => {
-        const res = await request(BASE)
-            .post("/api/restaurants")
-            .send({
-                name: "Pizza Palace Deluxe",
-                description: "desc",
-                address: "addr",
-                phone: "050-0000000"
-            });
-
-        restId = res.headers.location.split("/").pop();
+        owner = await createUser('restaurant_owner');
+        restaurantId = await createRestaurant(owner, { name: 'SearchFixture kitchen', description: 'Search description marker' });
+        productId = await createProduct(owner, restaurantId, { name: 'SearchFixture dish', description: 'A literal + character' });
     });
 
-    it("28. should find restaurant by name", async () => {
-        const res = await request(BASE).get(`/api/search/pizza`);
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.restaurants.length, 1);
-        assert.strictEqual(res.body.restaurants[0].id, restId);
+    it("finds restaurant and product names case-insensitively through the path parameter", async () => {
+        const found = await api.get('/api/search/searchfixture').expect(200);
+        assert.deepStrictEqual(found.body.restaurants.map(item => item.id), [restaurantId]);
+        assert.deepStrictEqual(found.body.products.map(item => item.id), [productId]);
     });
 
-    it("29. should return empty results", async () => {
-        const res = await request(BASE).get(`/api/search/doesnotexistanywhere`);
-        assert.strictEqual(res.status, 200);
-        assert.deepStrictEqual(res.body, { restaurants: [], products: [] });
+    it("searches descriptions and treats regular expression characters literally", async () => {
+        const description = await api.get('/api/search/' + encodeURIComponent('description marker')).expect(200);
+        assert.deepStrictEqual(description.body.restaurants.map(item => item.id), [restaurantId]);
+        const literal = await api.get('/api/search/' + encodeURIComponent('+')).expect(200);
+        assert.deepStrictEqual(literal.body.products.map(item => item.id), [productId]);
+        assert.deepStrictEqual(literal.body.restaurants, []);
     });
 
-    // CLEANUP - restaurantModel has getById/deleteRestaurant, safe
-    after(async () => {
-        await request(BASE).delete(`/api/restaurants/${restId}`);
+    it("returns empty arrays for a missing term", async () => {
+        const found = await api.get('/api/search/term-not-present-in-fixtures').expect(200);
+        assert.deepStrictEqual(found.body, { restaurants: [], products: [] });
+    });
+
+    it("stops returning products after their restaurant is deleted", async () => {
+        empty204(await api.delete(`/api/restaurants/${restaurantId}`).set(auth(owner)));
+        const found = await api.get('/api/search/SearchFixture').expect(200);
+        assert.deepStrictEqual(found.body, { restaurants: [], products: [] });
     });
 });

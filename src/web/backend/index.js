@@ -1,5 +1,8 @@
 // src/web/index.js
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const mongoose = require('mongoose');
 const cors = require('cors')
 const connectDB = require('./services/mongoService');
 const usersRouter = require('./routes/usersRouter');
@@ -23,12 +26,21 @@ app.post('/api/tokens', usersController.loginUser);
 
 // Health check endpoint for Docker and monitoring
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
+    const ready = mongoose.connection.readyState === 1;
+    res.status(ready ? 200 : 503).json({ status: ready ? 'ok' : 'unavailable' });
 });
 
 app.use('/api', (req, res) => {
     res.status(404).json({ error: "Endpoint not found" });
 });
+
+const frontendPath = path.join(__dirname, '../frontend/build');
+if (fs.existsSync(path.join(frontendPath, 'index.html'))) {
+    app.use(express.static(frontendPath));
+    app.get('/{*page}', (req, res) => {
+        res.sendFile(path.join(frontendPath, 'index.html'));
+    });
+}
 
 app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
