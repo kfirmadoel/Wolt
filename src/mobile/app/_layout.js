@@ -13,7 +13,7 @@ const PUBLIC_SCREENS = [undefined, 'index', 'search', 'restaurant'];
 
 function AppDrawer() {
   const { colors, dark, toggleTheme } = useTheme();
-  const { token, loading, signOut, profile } = useAuth();
+  const { token, userId, loading, signOut, profile } = useAuth();
   const { itemCount } = useCart();
   const segments = useSegments();
   const router = useRouter();
@@ -90,6 +90,8 @@ function AppDrawer() {
         <Drawer.Screen name="index" options={{ drawerLabel: 'Restaurants', title: 'Wolt Clone' }} />
         <Drawer.Screen name="cart" options={{ drawerLabel: `Cart (${itemCount})`, title: 'Your cart' }} />
         <Drawer.Screen name="orders" options={{ drawerLabel: 'Order history', title: 'Your orders' }} />
+        <Drawer.Screen name="my-restaurants" options={{ drawerLabel: 'My restaurants', title: 'My restaurants', drawerItemStyle: profile?.id === userId && profile?.role === 'restaurant_owner' ? undefined : { display: 'none' } }} />
+        <Drawer.Screen name="manage-restaurant" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="order/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="restaurant/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="login" options={authScreenOptions} />
