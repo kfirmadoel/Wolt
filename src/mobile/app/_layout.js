@@ -5,12 +5,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { useRouter, useSegments } from 'expo-router';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { COLORS } from '../config';
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 
 const AUTH_SCREENS = ['login', 'register'];
 const PUBLIC_SCREENS = [undefined, 'index', 'search', 'restaurant'];
 
 function AppDrawer() {
+  const { colors, dark, toggleTheme } = useTheme();
   const { token, loading, signOut, profile } = useAuth();
   const segments = useSegments();
   const router = useRouter();
@@ -38,8 +39,8 @@ function AppDrawer() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -55,17 +56,28 @@ function AppDrawer() {
       <Drawer
         screenOptions={{
           headerTitleAlign: 'center',
-          drawerActiveTintColor: COLORS.primary,
+          drawerActiveTintColor: colors.accentText,
+          drawerActiveBackgroundColor: colors.selected,
+          drawerInactiveTintColor: colors.text,
+          drawerStyle: { backgroundColor: colors.card },
+          headerStyle: { backgroundColor: colors.card },
+          headerTintColor: colors.text,
+          sceneStyle: { backgroundColor: colors.background },
           headerTitle: () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: 170 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: 125 }}>
               {profile?.picture ? <Image source={{ uri: profile.picture }} style={{ width: 30, height: 30, borderRadius: 15 }} /> : null}
-              <Text numberOfLines={1} style={{ color: COLORS.text, fontWeight: 'bold', flexShrink: 1 }}>{profile?.name || 'Wolt Clone'}</Text>
+              <Text numberOfLines={1} style={{ color: colors.text, fontWeight: 'bold', flexShrink: 1 }}>{profile?.name || 'Wolt Clone'}</Text>
             </View>
           ),
           headerRight: () => (
-            <TouchableOpacity onPress={token ? confirmLogout : () => router.push('/login')} style={{ paddingHorizontal: 16 }}>
-              <Text style={{ color: token ? COLORS.error : COLORS.text, fontWeight: 'bold' }}>{token ? 'Log out' : 'Log in'}</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity onPress={toggleTheme} accessibilityLabel={dark ? 'Switch to light mode' : 'Switch to dark mode'} style={{ padding: 10 }}>
+                <Text style={{ color: colors.accentText, fontWeight: 'bold' }}>{dark ? 'Light' : 'Dark'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={token ? confirmLogout : () => router.push('/login')} style={{ padding: 10 }}>
+                <Text style={{ color: token ? colors.error : colors.text, fontWeight: 'bold' }}>{token ? 'Log out' : 'Log in'}</Text>
+              </TouchableOpacity>
+            </View>
           ),
         }}
       >
@@ -79,8 +91,10 @@ function AppDrawer() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AppDrawer />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppDrawer />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

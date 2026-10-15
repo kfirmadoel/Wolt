@@ -7,9 +7,11 @@ import LoadMessage from '../components/LoadMessage';
 import { useAuth } from '../context/AuthContext';
 import { getData } from '../services/api';
 import { calculateDistance } from '../utils/distance';
-import { COLORS } from '../config';
+import { useTheme } from '../context/ThemeContext';
 
 export default function RestaurantsScreen() {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   const { token, profile, profileError, reloadProfile } = useAuth();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,12 +68,12 @@ export default function RestaurantsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+const createStyles = (colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 18, paddingBottom: 32 },
-  hero: { backgroundColor: COLORS.selected, padding: 22, borderRadius: 16 },
-  label: { color: '#00677e', fontWeight: 'bold', fontSize: 11, letterSpacing: 1 },
-  title: { fontSize: 28, fontWeight: 'bold', color: COLORS.text, marginTop: 10 },
-  subtitle: { color: COLORS.muted, marginTop: 10, fontSize: 14, lineHeight: 21 },
-  sectionTitle: { fontSize: 21, fontWeight: 'bold', color: COLORS.text, marginBottom: 14 },
+  hero: { backgroundColor: colors.selected, padding: 22, borderRadius: 16 },
+  label: { color: colors.accentText, fontWeight: 'bold', fontSize: 11, letterSpacing: 1 },
+  title: { fontSize: 28, fontWeight: 'bold', color: colors.text, marginTop: 10 },
+  subtitle: { color: colors.muted, marginTop: 10, fontSize: 14, lineHeight: 21 },
+  sectionTitle: { fontSize: 21, fontWeight: 'bold', color: colors.text, marginBottom: 14 },
 });

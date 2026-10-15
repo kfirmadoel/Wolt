@@ -1,9 +1,11 @@
 import React from 'react';
 import { FlatList, Text, View, StyleSheet } from 'react-native';
 import RestaurantCard from './RestaurantCard';
-import { COLORS } from '../config';
+import { useTheme } from '../context/ThemeContext';
 
 export default function RestaurantSection({ title, restaurants, onSelect }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   if (restaurants.length === 0) return null;
 
   return (
@@ -22,7 +24,7 @@ export default function RestaurantSection({ title, restaurants, onSelect }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   section: { marginBottom: 22 },
-  title: { fontSize: 21, fontWeight: 'bold', color: COLORS.text, marginBottom: 12 },
+  title: { fontSize: 21, fontWeight: 'bold', color: colors.text, marginBottom: 12 },
 });

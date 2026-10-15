@@ -1,11 +1,13 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import { COLORS } from '../config';
+import { useTheme } from '../context/ThemeContext';
 
 export default function LoadMessage({ loading, error, empty, onRetry }) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
   return (
     <View style={styles.container}>
-      {loading ? <ActivityIndicator size="large" color={COLORS.primary} /> : (
+      {loading ? <ActivityIndicator size="large" color={colors.primary} /> : (
         <>
           <Text style={[styles.text, error && styles.error]}>{error || empty}</Text>
           {error && onRetry ? (
@@ -19,10 +21,10 @@ export default function LoadMessage({ loading, error, empty, onRetry }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: { paddingVertical: 28, alignItems: 'center' },
-  text: { color: COLORS.muted, textAlign: 'center', lineHeight: 22 },
-  error: { color: COLORS.error },
-  button: { marginTop: 14, paddingHorizontal: 22, paddingVertical: 12, borderRadius: 8, backgroundColor: COLORS.primary },
+  text: { color: colors.muted, textAlign: 'center', lineHeight: 22 },
+  error: { color: colors.error },
+  button: { marginTop: 14, paddingHorizontal: 22, paddingVertical: 12, borderRadius: 8, backgroundColor: colors.primary },
   buttonText: { color: '#002a33', fontWeight: 'bold' },
 });
