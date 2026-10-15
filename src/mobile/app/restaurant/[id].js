@@ -19,7 +19,7 @@ export default function RestaurantScreen() {
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState('');
   const [reloadVersion, setReloadVersion] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productLoading, setProductLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function RestaurantScreen() {
   const [productVersion, setProductVersion] = useState(0);
 
   useEffect(() => {
-    setSelectedCategory('All');
+    setSelectedCategory(null);
     setSelectedProductId(typeof productId === 'string' ? productId : null);
   }, [id, productId]);
 
@@ -45,7 +45,7 @@ export default function RestaurantScreen() {
         if (active) {
           setRestaurant(details);
           setProducts(menu);
-          setSelectedCategory((category) => menu.some((product) => product.category === category) ? category : 'All');
+          setSelectedCategory((category) => menu.some((product) => product.category === category) ? category : null);
         }
       } catch (err) {
         if (active) setServerError(err.status === 404 ? 'Restaurant not found.' : 'Could not load the menu. Please try again.');
@@ -77,7 +77,7 @@ export default function RestaurantScreen() {
   };
   const goBack = () => router.canGoBack() ? router.back() : router.replace('/');
   const categories = [...new Set(products.map((product) => product.category).filter(Boolean))].sort();
-  const filtered = selectedCategory === 'All' ? products : products.filter((product) => product.category === selectedCategory);
+  const filtered = selectedCategory === null ? products : products.filter((product) => product.category === selectedCategory);
 
   return (
     <FlatList

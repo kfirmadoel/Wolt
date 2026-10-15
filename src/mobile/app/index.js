@@ -19,12 +19,13 @@ export default function RestaurantsScreen() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ restaurants: [], products: [] });
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const searchRequest = useRef(0);
+  const restaurantsRequest = useRef(0);
 
   const openRestaurant = (restaurant) => router.push({ pathname: '/restaurant/[id]', params: { id: restaurant.id } });
   const openProduct = (product) => router.push({ pathname: '/restaurant/[id]', params: { id: product.restaurantId, productId: product.id } });
@@ -56,25 +57,33 @@ export default function RestaurantsScreen() {
   };
 
   const loadRestaurants = async () => {
+    const requestId = ++restaurantsRequest.current;
     setLoading(true);
     setServerError('');
     try {
       const data = await getData('/api/restaurants', token);
-      setRestaurants(data);
-      setSelectedCategory((category) => data.some((restaurant) => restaurant.category === category) ? category : 'All');
+      if (requestId === restaurantsRequest.current) {
+        setRestaurants(data);
+        setSelectedCategory((category) => data.some((restaurant) => restaurant.category === category) ? category : null);
+      }
     } catch (err) {
-      setRestaurants([]);
-      setServerError('Could not load restaurants. Check your connection and try again.');
+      if (requestId === restaurantsRequest.current) {
+        setRestaurants([]);
+        setServerError('Could not load restaurants. Check your connection and try again.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === restaurantsRequest.current) setLoading(false);
     }
   };
 
-  useEffect(() => { loadRestaurants(); }, [token]);
+  useEffect(() => {
+    loadRestaurants();
+    return () => { restaurantsRequest.current += 1; };
+  }, [token]);
 
   const categories = [...new Set(restaurants.map((restaurant) => restaurant.category).filter(Boolean))].sort();
   const withDistance = restaurants.map((restaurant) => ({ ...restaurant, distance: calculateDistance(restaurant.location, profile?.location) }));
-  const filtered = selectedCategory === 'All' ? withDistance : withDistance.filter((restaurant) => restaurant.category === selectedCategory);
+  const filtered = selectedCategory === null ? withDistance : withDistance.filter((restaurant) => restaurant.category === selectedCategory);
   const nearby = filtered.filter((restaurant) => restaurant.distance !== null).sort((a, b) => a.distance - b.distance);
   const visibleRestaurants = searchQuery ? searchResults.restaurants : filtered;
   const rows = [
@@ -113,7 +122,7 @@ export default function RestaurantsScreen() {
               <CategoryFilter categories={categories} selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
               <RestaurantSection title="Promoted restaurants" restaurants={filtered.filter((restaurant) => restaurant.isPromoted)} onSelect={openRestaurant} />
               <RestaurantSection title="Near your saved location" restaurants={nearby} onSelect={openRestaurant} />
-              <Text style={styles.sectionTitle}>{selectedCategory === 'All' ? 'All restaurants' : selectedCategory}</Text>
+              <Text style={styles.sectionTitle}>{selectedCategory === null ? 'All restaurants' : selectedCategory}</Text>
             </>
           )}
         </View>

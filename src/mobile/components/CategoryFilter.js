@@ -7,15 +7,15 @@ export default function CategoryFilter({ categories, selectedCategory, onSelect 
   const styles = createStyles(colors);
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.container}>
-      {['All', ...categories].map((category) => (
+      {[null, ...categories].map((category) => (
         <TouchableOpacity
-          key={category}
+          key={category === null ? 'all' : `category-${category}`}
           onPress={() => onSelect(category)}
           accessibilityRole="button"
           accessibilityState={{ selected: selectedCategory === category }}
           style={[styles.button, selectedCategory === category && styles.selected]}
         >
-          <Text style={[styles.text, selectedCategory === category && styles.selectedText]}>{category}</Text>
+          <Text style={[styles.text, selectedCategory === category && styles.selectedText]}>{category === null ? 'All categories' : category}</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
