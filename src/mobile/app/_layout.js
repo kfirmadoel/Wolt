@@ -1,6 +1,6 @@
 // app/_layout.js - the only layout: AuthProvider + route guard + Drawer
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { useRouter, useSegments } from 'expo-router';
@@ -8,24 +8,32 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import { COLORS } from '../config';
 
 const AUTH_SCREENS = ['login', 'register'];
+const PUBLIC_SCREENS = [undefined, 'index', 'search', 'restaurant'];
 
 function AppDrawer() {
-  const { token, loading, signOut } = useAuth();
+  const { token, loading, signOut, profile } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
-  // Route guard: guests can only see login/register; logged-in users can't go back to them
+  // Browsing is public; account actions still require a login.
   useEffect(() => {
     if (loading) return;
     const onAuthScreen = AUTH_SCREENS.includes(segments[0]);
-    if (!token && !onAuthScreen) router.replace('/login');
+    if (!token && !onAuthScreen && !PUBLIC_SCREENS.includes(segments[0])) router.replace('/login');
     else if (token && onAuthScreen) router.replace('/');
   }, [token, loading, segments]);
 
   const confirmLogout = () =>
     Alert.alert('Log out', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Log out', style: 'destructive', onPress: signOut }, // the guard sends you to /login
+      { text: 'Log out', style: 'destructive', onPress: async () => {
+        try {
+          await signOut();
+          router.replace('/login');
+        } catch (err) {
+          Alert.alert('Log out failed', 'Please try again.');
+        }
+      } },
     ]);
 
   if (loading) {
@@ -48,10 +56,15 @@ function AppDrawer() {
         screenOptions={{
           headerTitleAlign: 'center',
           drawerActiveTintColor: COLORS.primary,
-          swipeEnabled: !!token,
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: 170 }}>
+              {profile?.picture ? <Image source={{ uri: profile.picture }} style={{ width: 30, height: 30, borderRadius: 15 }} /> : null}
+              <Text numberOfLines={1} style={{ color: COLORS.text, fontWeight: 'bold', flexShrink: 1 }}>{profile?.name || 'Wolt Clone'}</Text>
+            </View>
+          ),
           headerRight: () => (
-            <TouchableOpacity onPress={confirmLogout} style={{ paddingHorizontal: 16 }}>
-              <Text style={{ color: COLORS.error, fontWeight: 'bold' }}>Log out</Text>
+            <TouchableOpacity onPress={token ? confirmLogout : () => router.push('/login')} style={{ paddingHorizontal: 16 }}>
+              <Text style={{ color: token ? COLORS.error : COLORS.text, fontWeight: 'bold' }}>{token ? 'Log out' : 'Log in'}</Text>
             </TouchableOpacity>
           ),
         }}

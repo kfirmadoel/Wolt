@@ -70,6 +70,9 @@ export default function LoginScreen() {
       <TouchableOpacity onPress={() => router.push('/register')} style={styles.linkButton}>
         <Text style={styles.linkText}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.replace('/')} style={styles.linkButton}>
+        <Text style={styles.linkText}>Browse restaurants</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
