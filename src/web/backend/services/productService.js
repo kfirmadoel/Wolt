@@ -16,6 +16,8 @@ const create = async (restaurantId, data) => {
         restaurantId,
         name: data.name,
         description: data.description || "",
+        category: data.category || "",
+        picture: data.picture || "",
         price: Number(data.price)
     });
     await product.save();
@@ -26,6 +28,8 @@ const updateProduct = async (pId, restaurantId, data) => {
     const update = {};
     if (data.name !== undefined) update.name = data.name;
     if (data.description !== undefined) update.description = data.description;
+    if (data.category !== undefined) update.category = data.category;
+    if (data.picture !== undefined) update.picture = data.picture;
     if (data.price !== undefined) update.price = Number(data.price);
 
     return await Product.findOneAndUpdate(

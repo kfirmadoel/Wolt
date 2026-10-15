@@ -82,6 +82,7 @@ function AppDrawer() {
         }}
       >
         <Drawer.Screen name="index" options={{ drawerLabel: 'Restaurants', title: 'Wolt Clone' }} />
+        <Drawer.Screen name="restaurant/[id]" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="login" options={authScreenOptions} />
         <Drawer.Screen name="register" options={authScreenOptions} />
       </Drawer>

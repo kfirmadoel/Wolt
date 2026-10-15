@@ -11,6 +11,12 @@ const createProduct = async (req, res) => {
     if (!req.body.name || !req.body.price || req.body.price <= 0) {
         return res.status(400).json({ error: "Name and a valid price greater than 0 are required" });
     }
+    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
+        return res.status(400).json({ error: "Category must be a string" });
+    }
+    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
+        return res.status(400).json({ error: "Picture must be a string" });
+    }
 
     const newProduct = await productService.create(req.params.id, req.body);
     res.status(201).location(`/api/restaurants/${req.params.id}/products/${newProduct.id}`).send();
@@ -42,6 +48,12 @@ const updateProduct = async (req, res) => {
     }
     if (req.body.price !== undefined && req.body.price <= 0) {
         return res.status(400).json({ error: "Price must be greater than 0" });
+    }
+    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
+        return res.status(400).json({ error: "Category must be a string" });
+    }
+    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
+        return res.status(400).json({ error: "Picture must be a string" });
     }
 
     const product = await productService.updateProduct(req.params.pId, req.params.id, req.body);

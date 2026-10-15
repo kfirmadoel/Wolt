@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import RestaurantCard from '../components/RestaurantCard';
 import CategoryFilter from '../components/CategoryFilter';
 import RestaurantSection from '../components/RestaurantSection';
@@ -24,6 +25,9 @@ export default function RestaurantsScreen() {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const searchRequest = useRef(0);
+
+  const openRestaurant = (restaurant) => router.push({ pathname: '/restaurant/[id]', params: { id: restaurant.id } });
+  const openProduct = (product) => router.push({ pathname: '/restaurant/[id]', params: { id: product.restaurantId, productId: product.id } });
 
   const clearSearch = () => {
     searchRequest.current += 1;
@@ -88,8 +92,8 @@ export default function RestaurantsScreen() {
       onRefresh={() => searchQuery ? handleSearch(searchQuery) : loadRestaurants()}
       keyExtractor={(item) => `${item.resultType}-${item.id}`}
       renderItem={({ item }) => item.resultType === 'product' ? (
-        <ProductCard product={item} restaurantName={restaurants.find((restaurant) => restaurant.id === item.restaurantId)?.name} />
-      ) : <RestaurantCard restaurant={item} />}
+        <ProductCard product={item} restaurantName={restaurants.find((restaurant) => restaurant.id === item.restaurantId)?.name} onPress={() => openProduct(item)} />
+      ) : <RestaurantCard restaurant={item} onPress={() => openRestaurant(item)} />}
       ListHeaderComponent={
         <View>
           <View style={styles.hero}>
@@ -107,8 +111,8 @@ export default function RestaurantsScreen() {
           ) : (
             <>
               <CategoryFilter categories={categories} selectedCategory={selectedCategory} onSelect={setSelectedCategory} />
-              <RestaurantSection title="Promoted restaurants" restaurants={filtered.filter((restaurant) => restaurant.isPromoted)} />
-              <RestaurantSection title="Near your saved location" restaurants={nearby} />
+              <RestaurantSection title="Promoted restaurants" restaurants={filtered.filter((restaurant) => restaurant.isPromoted)} onSelect={openRestaurant} />
+              <RestaurantSection title="Near your saved location" restaurants={nearby} onSelect={openRestaurant} />
               <Text style={styles.sectionTitle}>{selectedCategory === 'All' ? 'All restaurants' : selectedCategory}</Text>
             </>
           )}
