@@ -1,6 +1,6 @@
 // app/_layout.js - the only layout: AuthProvider + route guard + Drawer
 import React, { useEffect } from 'react';
-import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { useRouter, useSegments } from 'expo-router';
@@ -53,6 +53,10 @@ function AppDrawer() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar
+        barStyle={dark && !AUTH_SCREENS.includes(segments[0]) ? 'light-content' : 'dark-content'}
+        backgroundColor={AUTH_SCREENS.includes(segments[0]) ? '#fff' : colors.card}
+      />
       <Drawer
         screenOptions={{
           headerTitleAlign: 'center',
