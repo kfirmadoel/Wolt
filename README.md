@@ -40,9 +40,9 @@ docker compose --profile unit run --build --rm cpp-tests
 
 API tests use their own MongoDB service and a temporary database. They call an imported Express app, not the running application server. The C++ tests do not mount the recommendation server's data volume. See [test details](wiki/run.md#tests) for the local test command.
 
-The container suites passed: 32 API tests and 14 C++ tests. Data was also retained after restart and container recreation. The checked environment used a local MongoDB 8.3.9 override because the configured 8.0 image could not be downloaded. Build and runtime details are in [verification status](wiki/run.md#verification-status).
+The final container suites passed: 39 API tests and 14 C++ tests. The repository configuration uses the verified MongoDB 8.3.9 image. Saved application and recommendation data survived both service restart and container recreation. The [run guide](wiki/run.md#verification-status) records the checks and an optional build certificate setup for computers using HTTPS inspection.
 
-The website placed an order in the Compose environment. Expo Go connected to the same environment, logged in as the same customer and displayed the order in history. Mobile registration validation was also checked there; a complete registration and mobile checkout against Compose remain to be checked. See [the recorded flows](wiki/flows.md).
+The website and Expo Go were checked against the same Compose API. Registration, restaurant and menu management, cart and order flows are documented in [the recorded flows](wiki/flows.md), which distinguishes captured results from user-reported checks. The final edge-case checks also cover simultaneous registration, menu deletion, pending checkout and delayed profile responses.
 
 ## Data and images
 

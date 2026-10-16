@@ -266,11 +266,22 @@ The following UI checks were performed separately on 15 October against `wolt-pa
 | Expo Go against Compose | Login and order history checked; the website's new order appeared for the same customer |
 | Mobile registration validation against Compose | Required-field errors displayed; both coordinate messages wrapped within their columns |
 
+The complete native flow was checked on 16 October in the same `wolt-part3-compose` environment, with API `3002` and Metro `8082`:
+
+| Check | Result |
+| --- | --- |
+| Registration and login | Created the fictional `LeoMoran` account, selected a coffee picture through the individual-photo chooser with broad media access still denied, then logged in |
+| Mobile checkout | One Classic Pizza at ₪42.00 and one Garden Salad at ₪28.00 produced a confirmed order totaling ₪70.00 |
+| Order editing and reopening | Changed pizza quantity to two and removed the salad; saving and reopening the details both showed ₪84.00 |
+| Cancel and confirm deletion | Cancel followed by refresh kept the order; confirmed deletion followed by refresh showed an empty history |
+
+The Web service on `3002` was also updated with the profile error/retry fix from `fa944b1`, and its deployed build was verified. Existing application data was preserved during the update. See [the final Compose screenshots](flows.md#final-compose-checks-on-16-october).
+
 The `mongo:8.0` download still failed with EOF when retried on 16 October. The official `mongo:8.3.9` pull succeeded, with digest `sha256:81a1c8842a09589fc8d5f285266f3340bf4abdf66700ba22988f14cc9b2b3118`. Both repository Mongo services now use this verified version, so no Mongo image override is needed. The final test recreated all four application containers and checked that their IDs changed while the MongoDB and C++ named volumes stayed the same.
 
 The three Node image builds used the optional CA secret for this computer's AVG HTTPS inspection. The final checks used the repository Dockerfiles, without temporary replacement Dockerfiles. Ordinary builds need no CA override on machines where npm already trusts the network certificate. Metro can still report certificate warnings for external development assets on this computer; its manifest and Android bundle were verified successfully.
 
-Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` and `8081`. A later native run connected to the separate Compose API on `3002` and Metro on `8082`. Dana Amir logged in and saw both Olive Pizza orders, including the new website order at 21:40:53 for ₪42.00. Registration validation and the corrected coordinate-field layout were also checked after rebuilding the mobile image. These checks cover login, history and validation; a complete registration and mobile checkout against Compose remain unverified. See [the screenshots](flows.md#website-cart-and-order-in-the-compose-environment).
+Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` and `8081`. The 15 October native run connected to the separate Compose API on `3002` and Metro on `8082`. Dana Amir logged in and saw both Olive Pizza orders, including the new website order at 21:40:53 for ₪42.00. Registration validation and the corrected coordinate-field layout were also checked after rebuilding the mobile image. Those earlier captures remain in [the application walkthrough](flows.md#website-cart-and-order-in-the-compose-environment); the complete 16 October native flow is recorded above.
 
 There is no separate mobile lint or typecheck script in `package.json`. iOS and physical-device LAN connections have not been verified.
 

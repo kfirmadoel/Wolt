@@ -1,6 +1,6 @@
 # Application flows
 
-These screenshots were captured during local checks on 15 October 2026. Mobile checks used Expo Go in BlueStacks; website checks used the browser. Both clients read the same Node API and MongoDB database. The account names and demonstration records shown here are fictional.
+These screenshots were captured during checks on 15 and 16 October 2026. Mobile checks used Expo Go in BlueStacks; website checks used the browser. Both clients read the same Node API and MongoDB database within each environment. The first runs used local services; later runs used Docker Compose as described below. The account names and demonstration records shown here are fictional.
 
 The images are original captures, copied without cropping or changing pixels. No mouse pointer is visible. The round settings button in the mobile captures belongs to BlueStacks. The screenshots record the stages described below; they are not a complete record of every screen in the final version.
 
@@ -19,7 +19,7 @@ The mobile home loads restaurant data, pictures and categories from the server. 
 1. A signed-in customer added one Margherita Pizza from Basil Pizza and placed the order in the mobile app. The confirmation showed ₪42.00 and the cart became empty.
 2. The same account opened the order details on the website. The item, price and order ID matched the mobile confirmation.
 3. Quantity changes were saved during the check. The website showed two items at ₪84.00, and a later mobile history capture showed three items at ₪126.00. Refreshing the other client showed the updated server data.
-4. The order was later deleted from mobile after testing Cancel and then confirming Delete. Both histories were checked and were empty. The images below were taken before this deletion; no deletion-result screenshot has been added yet.
+4. The order was later deleted from mobile after testing Cancel and then confirming Delete. Both histories were checked and were empty. The images below were taken before this deletion. A separate Compose run below includes the refreshed history after deletion.
 
 Mobile confirmation after placing the order:
 
@@ -77,7 +77,7 @@ On the website, the owner also added **Flat White** at ₪19.00 with category **
 
 ![Website owner page showing successful restaurant and menu updates and Flat White at 21 shekels](images/ex5-part3-web-owner-updated.jpg)
 
-Website deletion of Flat White was attempted, but the browser automation could not answer its native confirmation dialog. No confirmed deletion is recorded here. This website check remains manual.
+Website deletion of Flat White was attempted, but the browser tool could not answer its native confirmation dialog. The final website confirmation checks are tracked below.
 
 ## Saved profile location
 
@@ -109,18 +109,53 @@ Following user testing, password requirements now start in gray without failure 
 
 <img src="images/ex5-part3-mobile-registration-validation.png" alt="Mobile registration form with required-field errors and coordinate validation messages contained within both columns" width="320">
 
-This capture contains no entered credentials and demonstrates validation only. Seven automated checks covered the registration picture chooser, including cancellation, failure and camera denial. Those checks do not establish that a complete native registration was performed.
+This capture demonstrates validation only. Seven automated checks covered the registration picture chooser, including cancellation, failure and camera denial. A complete native registration was then performed in the final run below.
 
-## Screenshots still to add
+## Final Compose checks on 16 October
 
-The list tracks missing demonstration captures, not a claim that every unchecked feature is unimplemented. Automated API and state checks are recorded separately from visual checks.
+The following run used the Compose API and website on `3002` and Metro on `8082`. The latest Web profile fix was deployed before the final order checks; existing data was retained. The separate clean Docker build and persistence checks used `3003` and `8083`, as recorded in [Build and run](run.md#verification-status).
 
-- [ ] Compose build/start and running services, plus a native order-history capture. The website checkout and observed native login/history checks against Compose are described above.
-- [ ] Complete registration and login captures in each client, including profile-picture selection. Mobile validation feedback is captured above. Do not show passwords or tokens.
-- [ ] Website restaurant creation/editing forms and deletion confirmation/result. The saved update and the refreshed mobile result are captured above.
-- [ ] Mobile restaurant deletion confirmation. The later My restaurants result is captured above; the dialog is not.
-- [ ] Website dish creation/editing forms and deletion confirmation/result. The saved website price update is captured above. Mobile creation, the updated price and the deletion result are also captured; the mobile editing controls and deletion dialog are not pictured yet.
-- [ ] Mobile cart quantities before submission and mobile checkout against Compose. The website cart, successful website order and earlier mobile order against local services are captured above.
-- [ ] Order editing controls and deletion results in both clients. Mobile deletion was checked, but its empty-history result is not pictured here. Website deletion confirmation still needs a complete visual check.
-- [ ] Saved location changes on the website and updated nearby restaurants in both clients. The mobile saved-location result is captured above.
-- [ ] Data remaining after a controlled restart of the Compose services, including MongoDB records and the C++ view data.
+Docker Desktop shows the four application services running after recreation, together with the separate MongoDB test service. Health checks and data persistence were verified through the commands in the run guide; the screenshot itself shows running status.
+
+![Docker Desktop showing the final Compose services running](images/docker-final-verify-running.jpg)
+
+### Registration and login in both clients
+
+On the website, the fictional owner **Maya Levi** registered with a selected coffee picture, then logged in and opened the profile. The password fields are masked in the form capture.
+
+![Website registration with a selected profile picture](images/ex5-web-registration.jpg)
+
+![Website profile after logging in as Maya Levi](images/ex5-web-login-profile.jpg)
+
+In Expo Go, **Leo Moran** selected a coffee picture through the system's individual-photo chooser while broad media access remained denied. The filled form kept password requirements gray before submission. Registration succeeded, and logging in displayed the chosen name and picture on the home screen.
+
+<img src="images/ex5-mobile-registration.png" alt="Filled native registration form with gray password hints and selected picture" width="320">
+
+<img src="images/ex5-mobile-account-created.png" alt="Native Account created confirmation" width="320">
+
+<img src="images/ex5-mobile-login-home.png" alt="Native home after login showing Leo Moran and the selected picture" width="320">
+
+### Native checkout, editing and deletion
+
+1. Leo added one **Classic Pizza** at ₪42 and one **Garden Salad** at ₪28 from Olive Pizza. The cart showed two items and ₪70.
+2. **Place order** returned `order_1792163383112_891` at ₪70 and emptied the cart.
+3. In the order edit screen, pizza quantity was changed to two and the salad removed. Saving returned to history at ₪84. Reopening the details showed two pizzas at ₪42 each.
+4. **Delete order → Cancel** kept the order after refresh. Confirming **Delete** removed it; refreshing history showed **No orders yet**.
+
+<img src="images/ex5-mobile-compose-cart.png" alt="Native cart with one pizza and one salad totaling 70 shekels" width="320">
+
+<img src="images/ex5-mobile-compose-receipt.png" alt="Native order receipt for 70 shekels and empty cart" width="320">
+
+<img src="images/ex5-mobile-compose-order-updated.png" alt="Native order history after saving two pizzas at 84 shekels" width="320">
+
+<img src="images/ex5-mobile-compose-order-details.png" alt="Reopened native order details with quantity two and total 84 shekels" width="320">
+
+<img src="images/ex5-mobile-compose-order-deleted.png" alt="Refreshed native history showing no orders after confirmed deletion" width="320">
+
+### Website owner and order checks
+
+Maya created **Garden Cafe**, renamed it to **Garden Cafe and Bakery**, added **Cappuccino** at ₪18 and updated its price to ₪20. The website placed an order for one cup, then saved a quantity change to two. The refreshed history showed ₪40.
+
+![Website order history after saving two Cappuccinos at 40 shekels](images/ex5-web-order-final-updated.jpg)
+
+The website's order, dish and restaurant delete confirmations were handed to the user because the browser tool could not operate the native dialog. Their final results are pending. Earlier manual checks were reported as successful by the user, including creating and deleting a temporary restaurant; that report is separate from the captured checks above.

@@ -2,7 +2,7 @@
 
 Start with [Build and run](run.md). It covers the full Compose setup, connecting Expo Go, local development, tests and data persistence.
 
-See [Application flows and screenshots](flows.md) for the recorded runs and their remaining checks.
+See [Application flows and screenshots](flows.md) for the recorded runs and their results.
 
 Both clients use the same API and MongoDB database. The website is served by Node on port `3000`; Expo/Metro serves the mobile JavaScript bundle on port `8081`. The emulator and Expo Go run outside Docker.
 
@@ -22,8 +22,8 @@ Use fictional accounts and non-personal pictures for the demonstration. Register
 On the website, open **Profile** as a restaurant owner. The restaurant manager appears below the profile. On mobile, open **My restaurants** from the drawer.
 
 1. Create a restaurant with a name, category, picture and location. Fill the remaining fields as shown in the form.
-2. Select the restaurant and edit its details. Save, then return to the restaurant list to check the result.
-3. Open its menu. On mobile this is **Manage menu**. Add a dish with a name, description, category, picture and positive price.
+2. Select **Edit restaurant** on the website or **Edit** on mobile. Change the details and save, then check the restaurant list.
+3. The website menu manager is inside **Edit restaurant**. On mobile, open **Manage menu**. Add a dish with a name, description, category, picture and positive price.
 4. Edit the dish and check the updated menu. Delete a dish and confirm the deletion.
 5. Delete a temporary restaurant and confirm. Its menu is removed too; existing orders keep the details saved when they were placed.
 
