@@ -60,6 +60,40 @@ Open [the website](http://localhost:3000). The Docker build compiles React and c
 
 For a readiness check, open [the API health endpoint](http://localhost:3000/api/health), which returns `{"status":"ok"}` only while MongoDB is connected. Metro exposes its status at [http://localhost:8081/status](http://localhost:8081/status).
 
+## Local certificate error during npm installation
+
+Skip this section unless a build reports a certificate verification error. On the development computer, AVG HTTPS inspection required its already trusted public root CA inside the npm build step. Docker documents [CA trust for HTTPS inspection](https://docs.docker.com/engine/network/ca-certs/) and [temporary build secret mounts](https://docs.docker.com/build/building/secrets/).
+
+Export that trusted public certificate as a PEM file outside the repository, with no private key. Set `NPM_CA_FILE` to its absolute path in the ignored root `.env` file; use forward slashes on Windows, for example `C:/certificates/local-root-ca.pem`.
+
+Create `.env.ca-build.yml` in the repository root with the following contents. That local override filename is covered by the existing `.gitignore`.
+
+```yaml
+secrets:
+  npm_ca:
+    file: ${NPM_CA_FILE}
+services:
+  web-server:
+    build:
+      secrets: [npm_ca]
+  api-tests:
+    build:
+      secrets: [npm_ca]
+  mobile:
+    build:
+      secrets: [npm_ca]
+```
+
+Use both Compose files for commands that build Node images:
+
+```bash
+docker compose -f docker-compose.yml -f .env.ca-build.yml config --quiet
+docker compose -f docker-compose.yml -f .env.ca-build.yml up --build -d
+docker compose -f docker-compose.yml -f .env.ca-build.yml --profile api run --build --rm api-tests
+```
+
+The Dockerfiles use the optional certificate only while `npm ci` runs. It is not copied into an image or mounted into the running application. Without this override, the same Dockerfiles run normal `npm ci`. TLS verification stays enabled; do not use `strict-ssl=false` or `NODE_TLS_REJECT_UNAUTHORIZED=0`. This build option does not change trust in Docker itself or in external services contacted by Metro at runtime.
+
 ## Connect Android / Expo Go
 
 Start the Android emulator on the host and make sure Expo Go is installed. Docker runs Metro, not the emulator. With one Android device connected, run:
@@ -85,6 +119,8 @@ A new `mongo-data` volume starts empty. Register through either client, then use
 | `cpp-data` | `/usr/src/wolt_project/data` | Recommendation view history |
 
 Compose prefixes volume names with the project name. Keep the same project directory/name when restarting to reuse the same volumes.
+
+Both MongoDB services use the official `mongo:8.3.9` image. This pins the version used in the runtime and persistence checks. The earlier `8.0` tag could not be downloaded on this computer; pulling `8.3.9` succeeded and matched the image already in use. Keep existing MongoDB volumes on this version; do not attach an older MongoDB version to a volume created by a newer server. Use a separate Compose project and fresh volumes for experiments.
 
 ```bash
 docker compose stop
@@ -206,25 +242,33 @@ Open the same `exp://127.0.0.1:8081` address in Expo Go. Restart Metro after cha
 
 ## Verification status
 
-Checked on 15 October 2026 in the separate Compose project `wolt-part3-compose`, using Web port `3002` and Metro port `8082` to avoid the local development services. The normal configuration above still uses `3000` and `8081`.
+The final Docker configuration was checked on 16 October 2026 in a new Compose project, `wolt-final-verify`, using Web port `3003` and Metro port `8083`. It used the repository's Dockerfiles and `mongo:8.3.9`, with only the CA build-secret override described above. It did not share data volumes with the existing application. The normal configuration still uses `3000` and `8081`.
 
 | Check | Result |
 | --- | --- |
-| Compose configuration, local React build and five application/test image builds | Passed |
+| Compose configuration and five application/test image builds, including the React build | Passed |
 | MongoDB, C++, Web and Metro services | All four healthy |
-| API tests in a container | 32 passed |
+| API tests in a container | 39 passed; temporary test database removed |
 | C++ tests in a container | 14 passed |
-| API setup and checks using fictional data | 22 passed |
+| API setup and checks using fictional data | 23 passed |
 | Restart MongoDB, C++ and Web, then read the saved data | 20 passed; records, the edited order, login and recommendation data retained |
 | Recreate all four application containers with the same volumes | 20 passed; new containers healthy and saved MongoDB/C++ data retained |
-| Metro manifest and Android JavaScript bundle | HTTP 200; bundle contained the API URL for port `3002` |
+| Metro manifest and Android JavaScript bundle | HTTP 200; bundle contained the API URL for port `3003` |
+| React direct routes and unknown API routes | Website routes returned the app; an unknown API route returned JSON 404 |
+| Latest fixes in the built images | Web profile/auth sources, mobile cart/checkout and backend edge-case fixes matched the current source |
+| Optional build CA | Certificate mount and `NODE_EXTRA_CA_CERTS` absent from running Web and mobile containers; no TLS bypass |
+
+The following UI checks were performed separately on 15 October against `wolt-part3-compose`, using Web `3002` and Metro `8082`:
+
+| Check | Result |
+| --- | --- |
 | Website checkout against Compose | One Classic Pizza order placed successfully at ₪42.00 |
 | Expo Go against Compose | Login and order history checked; the website's new order appeared for the same customer |
 | Mobile registration validation against Compose | Required-field errors displayed; both coordinate messages wrapped within their columns |
 
-The configured `mongo:8.0` image could not be downloaded because the registry download repeatedly ended with an EOF error. The runtime and API checks used the locally available MongoDB **8.3.9** image through a temporary override. The repository still specifies **8.0**, and that exact version remains unverified.
+The `mongo:8.0` download still failed with EOF when retried on 16 October. The official `mongo:8.3.9` pull succeeded, with digest `sha256:81a1c8842a09589fc8d5f285266f3340bf4abdf66700ba22988f14cc9b2b3118`. Both repository Mongo services now use this verified version, so no Mongo image override is needed. The final test recreated all four application containers and checked that their IDs changed while the MongoDB and C++ named volumes stayed the same.
 
-The three Node image builds required a temporary local CA trust adjustment for AVG HTTPS inspection. The public trusted CA was supplied during package installation through temporary Dockerfiles outside the repository. No certificate or TLS bypass was added to the project. The unmodified build on this computer encountered npm certificate verification errors; Metro also logged certificate warnings for external development assets, although its manifest and Android bundle loaded successfully.
+The three Node image builds used the optional CA secret for this computer's AVG HTTPS inspection. The final checks used the repository Dockerfiles, without temporary replacement Dockerfiles. Ordinary builds need no CA override on machines where npm already trusts the network certificate. Metro can still report certificate warnings for external development assets on this computer; its manifest and Android bundle were verified successfully.
 
 Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` and `8081`. A later native run connected to the separate Compose API on `3002` and Metro on `8082`. Dana Amir logged in and saw both Olive Pizza orders, including the new website order at 21:40:53 for ₪42.00. Registration validation and the corrected coordinate-field layout were also checked after rebuilding the mobile image. These checks cover login, history and validation; a complete registration and mobile checkout against Compose remain unverified. See [the screenshots](flows.md#website-cart-and-order-in-the-compose-environment).
 
@@ -237,7 +281,7 @@ The user reported completing the manual application checks, including creating a
 - All 39 API tests passed in a separate test database. These include duplicate registration, concurrent registration, malformed requests, ownership, deleted dishes, deleted restaurants and preserved order history.
 - Two controlled concurrent create/delete tests reproduced an orphan dish before the fix. Restaurant deletion now removes the parent first; a dish save that finishes after deletion is rejected and cleaned up.
 - Mobile source checks passed: 56 checkout checks and 26 cart checks. A pending order remains locked across cart changes and navigation. Receipts and uncertain-result messages remain visible, and old responses cannot clear another cart or account.
-- Web profile source checks passed: 39 checks for delayed responses, account changes, logout and same-account refresh. The checks use controlled React/fetch mocks, not browser timing.
+- Web profile source checks passed: 50 checks for delayed responses, account changes, logout, same-account refresh and the initial profile-error/retry state. The checks use controlled React/fetch mocks, not browser timing.
 - Registration source checks passed: 8 validation checks and 7 gallery checks. Duplicate usernames produce a clear error and keep the form values. Profile pictures remain required by Exercise 5, pages 2–3. Account deletion is not an explicit requirement in Exercises 3–5 and was not added.
 
-The Compose test database contains Olive Pizza and two dishes. The six-restaurant demonstration dataset, including Corner Burger, was loaded only into the earlier local development database. Both clients display the data returned by their configured API; demonstration data is not hard-coded into the screens.
+The isolated final Compose runtime fixture contains Olive Pizza and two dishes. The API suite uses another MongoDB service and removes its temporary database after running. The six-restaurant demonstration dataset, including Corner Burger, was loaded only into the earlier local development database. Both clients display the data returned by their configured API; demonstration data is not hard-coded into the screens.

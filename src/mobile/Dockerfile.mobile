@@ -1,7 +1,9 @@
 FROM node:24-bookworm-slim
 WORKDIR /app/mobile
 COPY package*.json ./
-RUN npm ci
+# Optional trusted CA for local HTTPS inspection during package installation.
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci
 COPY . ./
 ENV CI=1
 EXPOSE 8081

@@ -1,7 +1,9 @@
 FROM node:24-bookworm-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm ci
+# Optional trusted CA for local HTTPS inspection during package installation.
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -10,13 +12,15 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 
 FROM backend-base AS test
-RUN npm ci
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci
 COPY backend/ ./
 CMD ["npm", "test"]
 
 FROM backend-base AS runtime
 ENV NODE_ENV=production
-RUN npm ci --omit=dev
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci --omit=dev
 COPY backend/ ./
 COPY --from=frontend-build /app/frontend/build /app/frontend/build
 EXPOSE 3000

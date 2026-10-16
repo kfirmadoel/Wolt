@@ -8,7 +8,7 @@ volumes:
 
 services:
   mongo:
-    image: mongo:8.0
+    image: mongo:8.3.9
     networks:
       - wolt-network
     volumes:
@@ -83,7 +83,7 @@ services:
     profiles: ["unit"]
 
   mongo-tests:
-    image: mongo:8.0
+    image: mongo:8.3.9
     networks:
       - wolt-network
     healthcheck:
