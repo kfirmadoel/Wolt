@@ -53,10 +53,10 @@ const update = async (id, data) => {
 };
 
 const deleteRestaurant = async (id) => {
-    const restaurant = await Restaurant.findOne({ id });
+    const restaurant = await Restaurant.findOneAndDelete({ id });
     if (!restaurant) return null;
     await Product.deleteMany({ restaurantId: id });
-    return await Restaurant.findOneAndDelete({ id });
+    return restaurant;
 };
 
 module.exports = {

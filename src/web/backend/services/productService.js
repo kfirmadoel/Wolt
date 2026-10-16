@@ -1,5 +1,6 @@
 // services/productService.js
 const Product = require('../models/productModel');
+const Restaurant = require('../models/restaurantModel');
 
 const getById = async (pId, restaurantId) => {
     return await Product.findOne({ id: pId, restaurantId });
@@ -21,6 +22,10 @@ const create = async (restaurantId, data) => {
         price: Number(data.price)
     });
     await product.save();
+    if (!await Restaurant.findOne({ id: restaurantId })) {
+        await Product.deleteOne({ id: product.id, restaurantId });
+        return null;
+    }
     return product;
 };
 

@@ -1,5 +1,25 @@
 const assert = require('assert');
+const request = require('supertest');
 const { api, auth, createUser, createRestaurant, createProduct, createOrder, restaurantDetails, jsonError, empty204 } = require('./helpers');
+const { app } = require('../index');
+const Product = require('../models/productModel');
+
+const gate = () => {
+    let release;
+    const promise = new Promise(resolve => { release = resolve; });
+    return { promise, release };
+};
+
+const waitFor = async (promise) => {
+    let timer;
+    try {
+        await Promise.race([promise, new Promise((resolve, reject) => {
+            timer = setTimeout(() => reject(new Error("Timed out waiting for the controlled database operation")), 3000);
+        })]);
+    } finally {
+        clearTimeout(timer);
+    }
+};
 
 describe("Restaurants API", () => {
     let owner, other, customer;
@@ -69,9 +89,12 @@ describe("Restaurants API", () => {
         const unrelatedId = await createRestaurant(other);
         const unrelatedProduct = await createProduct(other, unrelatedId);
         const order = await createOrder(customer, id, productId);
+        const orderCount = (await api.get('/api/orders').set(auth(customer)).expect(200)).body.length;
         empty204(await api.delete(`/api/restaurants/${id}`).set(auth(owner)));
         jsonError(await api.get(`/api/restaurants/${id}`), 404);
-        const Product = require('../models/productModel');
+        jsonError(await api.delete(`/api/restaurants/${id}`).set(auth(owner)), 404);
+        jsonError(await api.post('/api/orders').set(auth(customer)).send({ restaurantId: id, items: [{ productId, quantity: 1 }] }), 404);
+        assert.strictEqual((await api.get('/api/orders').set(auth(customer)).expect(200)).body.length, orderCount);
         assert.strictEqual(await Product.countDocuments({ restaurantId: id }), 0);
         await api.get(`/api/restaurants/${unrelatedId}/products/${unrelatedProduct}`).expect(200);
         const history = await api.get(`/api/orders/${order.id}`).set(auth(customer)).expect(200);
@@ -79,4 +102,61 @@ describe("Restaurants API", () => {
         assert.strictEqual(history.body.totalPrice, order.totalPrice);
         empty204(await api.patch(`/api/orders/${order.id}`).set(auth(customer)).send({ status: 'completed' }));
     });
+
+    for (const pauseCascade of [false, true]) {
+        it(`rejects an in-flight product save ${pauseCascade ? 'before' : 'after'} the deleted restaurant's product cleanup`, async () => {
+            const id = await createRestaurant(owner);
+            const name = pauseCascade ? 'Late dish before cleanup' : 'Late dish after cleanup';
+            const saveReached = gate();
+            const resumeSave = gate();
+            const cleanupReached = gate();
+            const resumeCleanup = gate();
+            const originalSave = Product.prototype.save;
+            const originalDeleteMany = Product.deleteMany;
+            let creating, deleting;
+
+            Product.prototype.save = async function (...args) {
+                if (this.restaurantId === id && this.name === name) {
+                    saveReached.release();
+                    await resumeSave.promise;
+                }
+                return originalSave.apply(this, args);
+            };
+            Product.deleteMany = async function (filter, ...args) {
+                if (pauseCascade && filter.restaurantId === id) {
+                    cleanupReached.release();
+                    await resumeCleanup.promise;
+                }
+                return originalDeleteMany.call(this, filter, ...args);
+            };
+
+            try {
+                // Separate test servers let either response finish while the other request is paused.
+                creating = request(app).post(`/api/restaurants/${id}/products`).set(auth(owner)).timeout({ deadline: 5000 })
+                    .send({ name, price: 10 }).then(reply => reply);
+                await waitFor(saveReached.promise);
+                deleting = request(app).delete(`/api/restaurants/${id}`).set(auth(owner)).timeout({ deadline: 5000 }).then(reply => reply);
+                if (pauseCascade) {
+                    await waitFor(cleanupReached.promise);
+                } else {
+                    empty204(await deleting);
+                }
+                jsonError(await api.get(`/api/restaurants/${id}`), 404);
+
+                resumeSave.release();
+                jsonError(await creating, 404);
+                resumeCleanup.release();
+                empty204(await deleting);
+                assert.strictEqual(await Product.countDocuments({ restaurantId: id }), 0);
+                const search = await api.get('/api/search/' + encodeURIComponent(name)).expect(200);
+                assert.ok(!search.body.products.some(product => product.restaurantId === id));
+            } finally {
+                resumeSave.release();
+                resumeCleanup.release();
+                await Promise.allSettled([creating, deleting].filter(Boolean));
+                Product.prototype.save = originalSave;
+                Product.deleteMany = originalDeleteMany;
+            }
+        });
+    }
 });

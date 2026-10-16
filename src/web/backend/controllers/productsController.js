@@ -36,6 +36,9 @@ const createProduct = async (req, res) => {
     }
 
     const newProduct = await productService.create(req.params.id, req.body);
+    if (!newProduct) {
+        return res.status(404).json({ error: "Restaurant not found" });
+    }
     res.status(201).location(`/api/restaurants/${req.params.id}/products/${newProduct.id}`).send();
 };
 
