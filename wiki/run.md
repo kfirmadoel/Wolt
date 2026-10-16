@@ -285,6 +285,14 @@ Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` a
 
 There is no separate mobile lint or typecheck script in `package.json`. iOS and physical-device LAN connections have not been verified.
 
+### Final review update
+
+The Web image was rebuilt after the registration-feedback change and the backend Node engine declaration correction. React compiled successfully; MongoDB, C++, Web and Metro remained healthy. The same Web image was deployed to port `3002` without recreating its databases or changing the mobile service.
+
+On port `3003`, the registration hints were gray initially, red after an invalid submission and gray again after leaving and reopening the form. Login, restaurant and dish creation, checkout and canceling order deletion were checked through the website. The user reported successful website dish and restaurant deletion. Confirmed website order deletion remains a joint-review check because the browser tool could not complete the native dialog; see [the recorded result](flows.md#final-website-registration-and-order-check).
+
+A read-only audit of the existing backend production dependencies reported `proxy-addr` 2.0.7 ([advisory](https://github.com/advisories/GHSA-jqcg-44mw-7w3h)) and `qs` 6.15.3 ([parsing advisory](https://github.com/advisories/GHSA-x5fp-wj9c-mxmx), [stringify advisory](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g)). No matching use was found in the application: Express has `trust proxy=false`, uses the simple query parser and JSON bodies, and the application does not call `qs.stringify`. The lockfile versions were retained; these are existing runtime-dependency advisories, not test failures or a claim that the dependencies are vulnerability-free.
+
 ## Edge cases checked on 16 October 2026
 
 The user reported completing the manual application checks, including creating and deleting a temporary restaurant. The application has no request audit log, so the remaining database records do not prove every action or cancellation. Two additional accounts were present after the user checks; deleted restaurants and orders cannot be reconstructed from the current database.

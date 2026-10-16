@@ -57,3 +57,5 @@ Work is divided into Jira epics, stories and tasks. Tasks are assigned before im
 Exercise 5 builds on the earlier work: MongoDB replaces the Node server's in-memory storage, the mobile app uses the existing API, and the website remains available. HTTP controllers and the TCP client stay separate from the C++ command implementation. This keeps the integration within the earlier separation of responsibilities and Open-Closed Principle approach.
 
 The [project wiki](wiki/README.md) describes the main application flows. Submission details and personal identifiers belong in the separate `details.txt` submitted to the course, not in this repository.
+
+See [team review and submission](wiki/review.md) for the PR review path, the remaining team steps and the required Moodle file format.

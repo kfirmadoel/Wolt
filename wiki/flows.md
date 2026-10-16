@@ -77,7 +77,7 @@ On the website, the owner also added **Flat White** at ₪19.00 with category **
 
 ![Website owner page showing successful restaurant and menu updates and Flat White at 21 shekels](images/ex5-part3-web-owner-updated.jpg)
 
-Website deletion of Flat White was attempted, but the browser tool could not answer its native confirmation dialog. The final website confirmation checks are tracked below.
+The user later reported successfully deleting a dish and a restaurant on the website. The browser-tool confirmation checks are recorded below separately from that manual result.
 
 ## Saved profile location
 
@@ -158,4 +158,16 @@ Maya created **Garden Cafe**, renamed it to **Garden Cafe and Bakery**, added **
 
 ![Website order history after saving two Cappuccinos at 40 shekels](images/ex5-web-order-final-updated.jpg)
 
-The website's order, dish and restaurant delete confirmations were handed to the user because the browser tool could not operate the native dialog. Their final results are pending. Earlier manual checks were reported as successful by the user, including creating and deleting a temporary restaurant; that report is separate from the captured checks above.
+The user reported successfully deleting a dish and a restaurant on the website. Those manual results are separate from the captured checks above. The final browser run below records the remaining order-confirmation check.
+
+### Final website registration and order check
+
+The rebuilt website on port `3003` was checked with the fictional owner **Noa Shalev**. Password hints started gray, became red after submitting an empty form, and returned to gray after leaving registration and opening it again. The required fields and existing validation remained in place.
+
+![Fresh website registration with neutral password hints](images/ex5-web-registration-neutral.jpg)
+
+Noa created **Willow Cafe** and added **Cappuccino** at ₪20 with a coffee picture through the website forms. Checkout created `order_1792172250505_156`. Canceling the delete confirmation and refreshing kept the order; reopening its details showed the same item and total.
+
+![Website order details after canceling deletion and refreshing](images/ex5-web-order-before-delete.jpg)
+
+The browser tool could not complete the final confirmation reliably. The order was still present in a fresh tab, so confirmed website order deletion is not recorded as passed. During the joint review, delete this disposable order and refresh its history. The API deletion tests and the native mobile Cancel/Delete flow passed separately. This limitation does not establish an application failure.
