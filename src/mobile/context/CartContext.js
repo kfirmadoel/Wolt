@@ -9,12 +9,20 @@ const emptyCart = (ownerId) => ({ ownerId, restaurantId: null, restaurantName: '
 export function CartProvider({ children }) {
   const { token, userId } = useAuth();
   const [cart, setCart] = useState(() => emptyCart(userId));
+  const [checkoutPending, setCheckoutPending] = useState(false);
+  const [checkoutResult, setCheckoutResult] = useState(null);
   const changeVersion = useRef(0);
+  const checkoutRef = useRef(null);
+  const sessionRef = useRef(null);
+  sessionRef.current = { token, userId };
 
   useEffect(() => {
     changeVersion.current += 1;
     setCart(emptyCart(userId));
-    return () => { changeVersion.current += 1; };
+    checkoutRef.current = null;
+    setCheckoutPending(false);
+    setCheckoutResult(null);
+    return () => { changeVersion.current += 1; checkoutRef.current = null; };
   }, [token, userId]);
 
   const currentCart = token && cart.ownerId === userId ? cart : emptyCart(userId);
@@ -81,11 +89,35 @@ export function CartProvider({ children }) {
     });
   };
 
+  const beginCheckout = () => {
+    if (checkoutRef.current || !token || !userId || !currentCart.restaurantId || currentCart.items.length === 0 ||
+        sessionRef.current.token !== token || sessionRef.current.userId !== userId) return null;
+    const request = { token, userId, restaurantId: currentCart.restaurantId, items: currentCart.items };
+    checkoutRef.current = request;
+    setCheckoutPending(true);
+    setCheckoutResult(null);
+    return request;
+  };
+
+  const finishCheckout = (request, result) => {
+    if (checkoutRef.current !== request || sessionRef.current.token !== request.token || sessionRef.current.userId !== request.userId) return;
+    if (result?.order) {
+      changeVersion.current += 1;
+      setCart((current) => current.ownerId === request.userId && current.items === request.items ? emptyCart(request.userId) : current);
+    }
+    if (result) setCheckoutResult({ ...request, ...result });
+    checkoutRef.current = null;
+    setCheckoutPending(false);
+  };
+
   const itemCount = currentCart.items.reduce((count, item) => count + item.quantity, 0);
   const total = currentCart.items.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ ...currentCart, itemCount, total, addItem, changeQuantity, removeItem, clearCart }}>
+    <CartContext.Provider value={{ ...currentCart, itemCount, total, addItem, changeQuantity, removeItem, clearCart,
+      checkoutPending: checkoutPending && checkoutRef.current?.token === token && checkoutRef.current?.userId === userId,
+      checkoutResult: checkoutResult?.token === token && checkoutResult?.userId === userId ? checkoutResult : null,
+      beginCheckout, finishCheckout }}>
       {children}
     </CartContext.Provider>
   );

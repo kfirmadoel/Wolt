@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import CartItem from '../components/CartItem';
@@ -9,61 +9,43 @@ import { sendData } from '../services/api';
 
 export default function CartScreen() {
   const { token, userId } = useAuth();
-  const { restaurantId, restaurantName, items, itemCount, total, changeQuantity, removeItem, clearCart } = useCart();
+  const { restaurantId, restaurantName, items, itemCount, total, changeQuantity, removeItem,
+    checkoutPending: pending, checkoutResult: result, beginCheckout, finishCheckout } = useCart();
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
-  const requestRef = useRef(null);
-
-  useEffect(() => {
-    requestRef.current = null;
-    setSubmitting(false);
-    setResult((current) => current?.order && items.length === 0 && current.userId === userId && current.token === token ? current : null);
-    return () => { requestRef.current = null; };
-  }, [token, userId, items]);
 
   const submitOrder = async () => {
     if (!token || !userId) {
       router.push('/login');
       return;
     }
-    if (requestRef.current || !restaurantId || items.length === 0) return;
-    const request = { token, userId, items };
-    requestRef.current = request;
-    setSubmitting(true);
-    setResult(null);
+    const request = beginCheckout();
+    if (!request) return;
     try {
       const order = await sendData('/api/orders', token, 'POST', {
-        restaurantId,
-        items: items.map(({ product, quantity }) => ({ productId: product.id, quantity })),
+        restaurantId: request.restaurantId,
+        items: request.items.map(({ product, quantity }) => ({ productId: product.id, quantity })),
       });
-      if (requestRef.current !== request) return;
       if (!order || typeof order.id !== 'string' || !order.id || !Number.isFinite(order.totalPrice) || order.totalPrice < 0) {
         throw new Error('Order confirmation is missing.');
       }
-      clearCart(items);
-      setResult({ ...request, order });
+      finishCheckout(request, { order });
     } catch (err) {
-      if (requestRef.current !== request) return;
       let message = err.message || 'Could not place your order. Please try again.';
+      const uncertain = !err.status || err.status >= 500 || err.status < 400;
       if (err.status === 401 || err.status === 403) {
         message = 'Your session expired. Log out and log in again before placing the order.';
-      } else if (!err.status || err.status >= 500 || err.status < 400) {
+      } else if (uncertain) {
         message = 'We could not confirm whether your order was placed. Your cart was kept. Check your orders before trying again to avoid placing it twice.';
       }
-      setResult({ ...request, error: message });
+      finishCheckout(request, { error: message, uncertain });
     } finally {
-      if (requestRef.current === request) {
-        requestRef.current = null;
-        setSubmitting(false);
-      }
+      finishCheckout(request);
     }
   };
 
   const feedback = result && result.userId === userId && result.token === token &&
-    (result.order ? items.length === 0 : result.items === items) ? result : null;
-  const pending = submitting && requestRef.current?.userId === userId && requestRef.current?.token === token;
+    (result.order || result.uncertain || result.items === items) ? result : null;
   const openOrders = () => router.push({ pathname: '/orders', params: { refresh: String(Date.now()) } });
 
   if (!token || !userId) {
@@ -90,11 +72,14 @@ export default function CartScreen() {
         <View>
           <Text style={styles.title}>Your cart</Text>
           <TouchableOpacity onPress={openOrders} disabled={pending} style={styles.restaurantLink}><Text style={styles.link}>Order history</Text></TouchableOpacity>
+          {feedback?.error ? <Text style={styles.error}>{feedback.error}</Text> : null}
+          {feedback?.error ? <TouchableOpacity onPress={openOrders} style={styles.restaurantLink}><Text style={styles.link}>Check order history</Text></TouchableOpacity> : null}
           {feedback?.order ? (
             <View style={styles.confirmation}>
               <Text style={styles.success}>Order placed</Text>
               <Text style={styles.message}>Order {feedback.order.id}</Text>
               <Text style={styles.heading}>Total: ₪{feedback.order.totalPrice.toFixed(2)}</Text>
+              {items.length > 0 ? <Text style={styles.message}>This receipt is for your earlier order. Your current cart was kept. Review it before placing another order.</Text> : null}
               <TouchableOpacity onPress={() => router.push({ pathname: '/order/[id]', params: { id: feedback.order.id, refresh: String(Date.now()) } })} style={styles.restaurantLink}><Text style={styles.link}>View order details</Text></TouchableOpacity>
             </View>
           ) : null}
@@ -119,8 +104,6 @@ export default function CartScreen() {
         <View style={styles.summary}>
           <View style={styles.summaryRow}><Text style={styles.message}>Items</Text><Text style={styles.message}>{itemCount}</Text></View>
           <View style={styles.summaryRow}><Text style={styles.heading}>Total</Text><Text style={styles.heading}>₪{total.toFixed(2)}</Text></View>
-          {feedback?.error ? <Text style={styles.error}>{feedback.error}</Text> : null}
-          {feedback?.error ? <TouchableOpacity onPress={openOrders} style={styles.restaurantLink}><Text style={styles.link}>Check order history</Text></TouchableOpacity> : null}
           <TouchableOpacity onPress={submitOrder} disabled={pending} style={[styles.button, styles.checkoutButton, pending && styles.disabled]} accessibilityRole="button">
             {pending ? <ActivityIndicator color="#002a33" /> : null}
             <Text style={styles.buttonText}>{pending ? 'Placing order...' : 'Place order'}</Text>
