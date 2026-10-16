@@ -11,10 +11,12 @@ export const AuthProvider = ({ children }) => {
     const [userId, setUserId] = useState(() => localStorage.getItem('userId'));
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [profileError, setProfileError] = useState('');
     const profileRequest = useRef(null);
 
     // Fetch user details from backend using userId
     const fetchUserDetails = useCallback(async (currentUserId, currentToken) => {
+        setProfileError('');
         if (profileRequest.current?.token !== currentToken || profileRequest.current?.userId !== currentUserId) {
             setUser(null);
             setLoading(true);
@@ -48,9 +50,14 @@ export const AuthProvider = ({ children }) => {
                 setUserId(null);
                 setUser(null);
                 setLoading(false);
+            } else {
+                setProfileError('Could not load your profile. Please try again.');
             }
         } catch (err) {
-            if (isCurrentRequest()) console.error('Error fetching user profile:', err);
+            if (isCurrentRequest()) {
+                setProfileError('Could not load your profile. Please try again.');
+                console.error('Error fetching user profile:', err);
+            }
         } finally {
             if (isCurrentRequest()) setLoading(false);
         }
@@ -102,10 +109,12 @@ export const AuthProvider = ({ children }) => {
         setUserId(null);
         setUser(null);
         setLoading(false);
+        setProfileError('');
         window.dispatchEvent(new Event('authChange'));
     };
 
     const refreshUser = () => {
+        if (!user) setLoading(true);
         return syncWithLocalStorage();
     };
 
@@ -118,6 +127,7 @@ export const AuthProvider = ({ children }) => {
                 token,
                 userId,
                 loading,
+                profileError,
                 isAuthenticated,
                 login,
                 logout,

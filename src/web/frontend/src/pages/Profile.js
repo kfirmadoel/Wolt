@@ -7,7 +7,7 @@ import RestaurantOwnerManager from '../components/RestaurantOwnerManager';
 import '../css/Profile.css';
 
 function Profile() {
-    const { user, userId, refreshUser } = useAuth();
+    const { user, userId, profileError, refreshUser } = useAuth();
 
     // Coordinate inputs initialized from the user's saved profile location
     const [latInput, setLatInput] = useState(
@@ -22,7 +22,12 @@ function Profile() {
     if (!user) {
         return (
             <div className="profile-page">
-                <p>Loading profile...</p>
+                {profileError ? (
+                    <>
+                        <p className="profile-feedback error" role="alert">{profileError}</p>
+                        <button type="button" className="profile-save-btn" onClick={refreshUser}>Try again</button>
+                    </>
+                ) : <p>Loading profile...</p>}
             </div>
         );
     }
