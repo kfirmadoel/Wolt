@@ -18,7 +18,12 @@ const create = async (data) => {
         location: data.location
     });
 
-    await newUser.save();
+    try {
+        await newUser.save();
+    } catch (error) {
+        if (error.code === 11000 && error.keyPattern?.username) return null;
+        throw error;
+    }
     return newUser;
 };
 
