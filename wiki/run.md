@@ -229,3 +229,15 @@ The three Node image builds required a temporary local CA trust adjustment for A
 Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` and `8081`. A later native run connected to the separate Compose API on `3002` and Metro on `8082`. Dana Amir logged in and saw both Olive Pizza orders, including the new website order at 21:40:53 for ₪42.00. Registration validation and the corrected coordinate-field layout were also checked after rebuilding the mobile image. These checks cover login, history and validation; a complete registration and mobile checkout against Compose remain unverified. See [the screenshots](flows.md#website-cart-and-order-in-the-compose-environment).
 
 There is no separate mobile lint or typecheck script in `package.json`. iOS and physical-device LAN connections have not been verified.
+
+## Edge cases checked on 16 October 2026
+
+The user reported completing the manual application checks, including creating and deleting a temporary restaurant. The application has no request audit log, so the remaining database records do not prove every action or cancellation. Two additional accounts were present after the user checks; deleted restaurants and orders cannot be reconstructed from the current database.
+
+- All 39 API tests passed in a separate test database. These include duplicate registration, concurrent registration, malformed requests, ownership, deleted dishes, deleted restaurants and preserved order history.
+- Two controlled concurrent create/delete tests reproduced an orphan dish before the fix. Restaurant deletion now removes the parent first; a dish save that finishes after deletion is rejected and cleaned up.
+- Mobile source checks passed: 56 checkout checks and 26 cart checks. A pending order remains locked across cart changes and navigation. Receipts and uncertain-result messages remain visible, and old responses cannot clear another cart or account.
+- Web profile source checks passed: 39 checks for delayed responses, account changes, logout and same-account refresh. The checks use controlled React/fetch mocks, not browser timing.
+- Registration source checks passed: 8 validation checks and 7 gallery checks. Duplicate usernames produce a clear error and keep the form values. Profile pictures remain required by Exercise 5, pages 2–3. Account deletion is not an explicit requirement in Exercises 3–5 and was not added.
+
+The Compose test database contains Olive Pizza and two dishes. The six-restaurant demonstration dataset, including Corner Burger, was loaded only into the earlier local development database. Both clients display the data returned by their configured API; demonstration data is not hard-coded into the screens.
