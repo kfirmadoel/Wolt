@@ -4,7 +4,7 @@ These are fictional restaurants and sample menus for the local demo. Prices are 
 
 `restaurants.json` contains the names, descriptions, prices and image filenames. The JPEG files are in `images/`. The mobile app does not import this file. It loads restaurants and products through the existing API from MongoDB.
 
-To reuse this data, sign in as a restaurant owner and use the existing restaurant and product creation screens. Alternatively, use `POST /api/restaurants` and `POST /api/restaurants/:id/products` with the owner's JWT. Choose a valid restaurant location and send each image as a `data:image/jpeg;base64,...` string in `picture`. Create each restaurant first, then its products using the returned restaurant ID. The `products` array in this file is a menu reference, not a field accepted by the restaurant creation endpoint.
+To reuse this data, sign in as a restaurant owner and use the existing restaurant and product creation screens. Alternatively, use `POST /api/restaurants` and `POST /api/restaurants/:id/products` with the owner's JWT. Choose a valid restaurant location and send each image as a `data:image/jpeg;base64,...` string in `picture`. Create each restaurant first. The server returns `201` with an empty body and a `Location: /api/restaurants/<id>` header; use that ID when creating its products. The `products` array in this file is a menu reference, not a field accepted by the restaurant creation endpoint.
 
 The sample data is not inserted automatically when the server starts. Existing users, ownership and other records should be preserved.
 

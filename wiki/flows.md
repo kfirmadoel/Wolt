@@ -134,6 +134,4 @@ The website order details provide **Edit items** and **Delete order** actions. T
 
 ## Profile location
 
-Open **Profile** on the website or **My profile** on mobile to update latitude and longitude. The saved location is used for nearby restaurants. The mobile example shows **32.1, 34.7818** with the success message after saving.
-
-<img src="images/ex5-part3-mobile-profile-saved.png" alt="Mobile profile showing saved coordinates 32.1, 34.7818 and successful location update feedback" width="320">
+Open **Profile** on the website or **My profile** on mobile to update latitude and longitude. After saving, the profile shows the updated coordinates and a confirmation message. The saved location is used for nearby restaurants.
