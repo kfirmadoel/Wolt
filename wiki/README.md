@@ -2,13 +2,13 @@
 
 Start with [Build and run](run.md). It covers the full Compose setup, connecting Expo Go, local development, tests and data persistence.
 
-See [Application flows and screenshots](flows.md) for the recorded runs and their results.
+See [Application flows and screenshots](flows.md) for examples of the screens and main operations.
 
 Both clients use the same API and MongoDB database. The website is served by Node on port `3000`; Expo/Metro serves the mobile JavaScript bundle on port `8081`. The emulator and Expo Go run outside Docker.
 
 ## Application walkthrough
 
-Use fictional accounts and non-personal pictures for the demonstration. Register a customer and a restaurant owner. Personal account details, passwords and JWTs should not appear in screenshots or documentation.
+The examples use fictional accounts and demonstration restaurants. Register a customer to browse and order, or a restaurant owner to manage restaurants and menus.
 
 ### Registration and login
 
@@ -47,4 +47,4 @@ Open **Profile** on the website or **My profile** on mobile to view account deta
 
 See [demo restaurants and photo licenses](../src/web/backend/demo/README.md). The data is not inserted automatically on startup. It can be entered through the owner screens or created with the existing API using the steps in that document.
 
-These walkthrough steps describe the application flow. See [verification status](run.md#verification-status) for the checks completed so far.
+See [test results](run.md#verification-status) for the test suites and environment used.

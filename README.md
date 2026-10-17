@@ -27,7 +27,7 @@ docker compose ps
 
 The default setup starts MongoDB, the C++ server, the Node server with the built React website, and Expo/Metro. Open [http://localhost:3000](http://localhost:3000) for the website. Expo Go and the Android emulator run on the host computer and connect to Metro on port `8081`.
 
-See [the run guide](wiki/run.md) for Windows/Linux commands, the emulator connection, local development, stopping the services and the current verification status. The old `dev` and `full` profiles are no longer needed.
+See [the run guide](wiki/run.md) for Windows/Linux commands, connecting the emulator, local development and stopping the services.
 
 ## Tests
 
@@ -40,9 +40,7 @@ docker compose --profile unit run --build --rm cpp-tests
 
 API tests use their own MongoDB service and a temporary database. They call an imported Express app, not the running application server. The C++ tests do not mount the recommendation server's data volume. See [test details](wiki/run.md#tests) for the local test command.
 
-The final container suites passed: 39 API tests and 14 C++ tests. The repository configuration uses the verified MongoDB 8.3.9 image. Saved application and recommendation data survived both service restart and container recreation. The [run guide](wiki/run.md#verification-status) records the checks and an optional build certificate setup for computers using HTTPS inspection.
-
-The website and Expo Go were checked against the same Compose API. Registration, restaurant and menu management, cart and order flows are documented in [the recorded flows](wiki/flows.md), which distinguishes captured results from user-reported checks. The final edge-case checks also cover simultaneous registration, menu deletion, pending checkout and delayed profile responses.
+The container suites passed with 39 API tests and 14 C++ tests. Saved application and recommendation data were retained after service restart and container recreation. See [test results](wiki/run.md#verification-status) and the [application walkthrough with screenshots](wiki/flows.md).
 
 ## Data and images
 
@@ -56,6 +54,4 @@ Work is divided into Jira epics, stories and tasks. Tasks are assigned before im
 
 Exercise 5 builds on the earlier work: MongoDB replaces the Node server's in-memory storage, the mobile app uses the existing API, and the website remains available. HTTP controllers and the TCP client stay separate from the C++ command implementation. This keeps the integration within the earlier separation of responsibilities and Open-Closed Principle approach.
 
-The [project wiki](wiki/README.md) describes the main application flows. Submission details and personal identifiers belong in the separate `details.txt` submitted to the course, not in this repository.
-
-See [team review and submission](wiki/review.md) for the PR review path, the remaining team steps and the required Moodle file format.
+The [project wiki](wiki/README.md) describes registration, login, restaurant and menu management, and cart and order flows in both clients.

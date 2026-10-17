@@ -7,7 +7,7 @@
 - Expo Go compatible with this project's Expo SDK 57, on an Android device or emulator. Android Debug Bridge (`adb`) is used for the emulator connection below.
 - Internet access for the first build to download base images, npm packages and GoogleTest.
 
-Node.js is not required on the host for the Compose setup. For local development, use Node 24.3 or later in the Node 24 release line; the local build was checked with Node 24.15.0. Use `npm ci` in each application directory to install the committed lockfile.
+Node.js is not required on the host for the Compose setup. For local development, use Node 24.3 or later in the Node 24 release line. Use `npm ci` in each application directory to install the committed lockfile.
 
 ## Configure the environment
 
@@ -34,7 +34,7 @@ Set `JWT_SECRET` to a locally chosen value in `.env`. Do not commit this file or
 | `EXPO_PUBLIC_API_URL` | `http://127.0.0.1:3000`, reached from the device |
 | `EXPO_PACKAGER_PROXY_URL` | `http://127.0.0.1:8081`, the Metro URL advertised to Expo Go |
 
-The two URLs are device-facing addresses, not Docker service names. The defaults use ADB reverse. If using a phone over LAN, replace `127.0.0.1` in both URLs with the computer's reachable LAN address and allow the two ports through its firewall. If changing a published port, update the corresponding URL and device connection too. LAN access has not been verified as part of the current run.
+The two URLs are device-facing addresses, not Docker service names. The defaults use ADB reverse. If using a phone over LAN, replace `127.0.0.1` in both URLs with the computer's reachable LAN address and allow the two ports through its firewall. If changing a published port, update the corresponding URL and device connection too. Physical-device LAN connections have not been tested.
 
 ## Start the full system
 
@@ -62,7 +62,7 @@ For a readiness check, open [the API health endpoint](http://localhost:3000/api/
 
 ## Local certificate error during npm installation
 
-Skip this section unless a build reports a certificate verification error. On the development computer, AVG HTTPS inspection required its already trusted public root CA inside the npm build step. Docker documents [CA trust for HTTPS inspection](https://docs.docker.com/engine/network/ca-certs/) and [temporary build secret mounts](https://docs.docker.com/build/building/secrets/).
+If HTTPS inspection causes a certificate verification error during `npm ci`, supply its trusted public root CA to the build. Docker documents [CA trust for HTTPS inspection](https://docs.docker.com/engine/network/ca-certs/) and [temporary build secret mounts](https://docs.docker.com/build/building/secrets/). Skip this section when the build succeeds without a custom certificate.
 
 Export that trusted public certificate as a PEM file outside the repository, with no private key. Set `NPM_CA_FILE` to its absolute path in the ignored root `.env` file; use forward slashes on Windows, for example `C:/certificates/local-root-ca.pem`.
 
@@ -107,7 +107,7 @@ adb reverse --list
 
 Open `exp://127.0.0.1:8081` in Expo Go. If more than one device is listed, select the intended device with `adb -s <device>` for each reverse command. If `adb` is not on PATH, run it from the installed Android platform-tools directory. Repeat the reverse commands after reconnecting or restarting the emulator.
 
-Port `8081` loads the app bundle; port `3000` loads its data. If the app opens but restaurants fail to load, check the API URL and the reverse rule for `3000`. The local BlueStacks connection used these two reverse rules; the container-based connection is tracked in the verification status below.
+Port `8081` loads the app bundle; port `3000` loads its data. If the app opens but restaurants fail to load, check the API URL and the reverse rule for `3000`.
 
 ## Data, stopping and restarting
 
@@ -120,7 +120,7 @@ A new `mongo-data` volume starts empty. Register through either client, then use
 
 Compose prefixes volume names with the project name. Keep the same project directory/name when restarting to reuse the same volumes.
 
-Both MongoDB services use the official `mongo:8.3.9` image. This pins the version used in the runtime and persistence checks. The earlier `8.0` tag could not be downloaded on this computer; pulling `8.3.9` succeeded and matched the image already in use. Keep existing MongoDB volumes on this version; do not attach an older MongoDB version to a volume created by a newer server. Use a separate Compose project and fresh volumes for experiments.
+Both MongoDB services use the official `mongo:8.3.9` image. Keep existing MongoDB volumes on this version; do not attach an older MongoDB version to a volume created by a newer server. Use a separate Compose project and fresh volumes for experiments.
 
 ```bash
 docker compose stop
@@ -242,65 +242,22 @@ Open the same `exp://127.0.0.1:8081` address in Expo Go. Restart Metro after cha
 
 ## Verification status
 
-The final Docker configuration was checked on 16 October 2026 in a new Compose project, `wolt-final-verify`, using Web port `3003` and Metro port `8083`. It used the repository's Dockerfiles and `mongo:8.3.9`, with only the CA build-secret override described above. It did not share data volumes with the existing application. The normal configuration still uses `3000` and `8081`.
+The Docker setup was tested with the repository's Dockerfiles and MongoDB 8.3.9. Mobile testing used Expo Go with Expo SDK 57 on an Android 9 emulator and ADB reverse.
 
 | Check | Result |
 | --- | --- |
-| Compose configuration and five application/test image builds, including the React build | Passed |
-| MongoDB, C++, Web and Metro services | All four healthy |
-| API tests in a container | 39 passed; temporary test database removed |
-| C++ tests in a container | 14 passed |
-| API setup and checks using fictional data | 23 passed |
-| Restart MongoDB, C++ and Web, then read the saved data | 20 passed; records, the edited order, login and recommendation data retained |
-| Recreate all four application containers with the same volumes | 20 passed; new containers healthy and saved MongoDB/C++ data retained |
-| Metro manifest and Android JavaScript bundle | HTTP 200; bundle contained the API URL for port `3003` |
-| React direct routes and unknown API routes | Website routes returned the app; an unknown API route returned JSON 404 |
-| Latest fixes in the built images | Web profile/auth sources, mobile cart/checkout and backend edge-case fixes matched the current source |
-| Optional build CA | Certificate mount and `NODE_EXTRA_CA_CERTS` absent from running Web and mobile containers; no TLS bypass |
+| Build and startup | Application and test images built; MongoDB, C++, Web and Metro became healthy |
+| API suite | 39 tests passed in a temporary database, which was removed after the run |
+| C++ suite | 14 tests passed |
+| Data persistence | MongoDB records and C++ recommendation history survived service restart and container recreation with the same named volumes |
+| Website routing | Direct React page URLs loaded the app; unknown API routes returned JSON 404 |
+| Metro | Android manifest and JavaScript bundle loaded successfully |
+| Mobile flows | Registration with picture selection, login, checkout, order editing and order deletion worked against the Compose API |
 
-The following UI checks were performed separately on 15 October against `wolt-part3-compose`, using Web `3002` and Metro `8082`:
+The API tests cover input validation, duplicate and concurrent registration, ownership, deleted restaurants and dishes, and preserved order history. Run the commands in [Tests](#tests) to repeat the API and C++ suites.
 
-| Check | Result |
-| --- | --- |
-| Website checkout against Compose | One Classic Pizza order placed successfully at ₪42.00 |
-| Expo Go against Compose | Login and order history checked; the website's new order appeared for the same customer |
-| Mobile registration validation against Compose | Required-field errors displayed; both coordinate messages wrapped within their columns |
+See the [application walkthrough](flows.md) for screenshots and the main client flows. iOS and physical-device LAN connections have not been tested.
 
-The complete native flow was checked on 16 October in the same `wolt-part3-compose` environment, with API `3002` and Metro `8082`:
+## Dependency maintenance
 
-| Check | Result |
-| --- | --- |
-| Registration and login | Created the fictional `LeoMoran` account, selected a coffee picture through the individual-photo chooser with broad media access still denied, then logged in |
-| Mobile checkout | One Classic Pizza at ₪42.00 and one Garden Salad at ₪28.00 produced a confirmed order totaling ₪70.00 |
-| Order editing and reopening | Changed pizza quantity to two and removed the salad; saving and reopening the details both showed ₪84.00 |
-| Cancel and confirm deletion | Cancel followed by refresh kept the order; confirmed deletion followed by refresh showed an empty history |
-
-The Web service on `3002` was also updated with the profile error/retry fix from `fa944b1`, and its deployed build was verified. Existing application data was preserved during the update. See [the final Compose screenshots](flows.md#final-compose-checks-on-16-october).
-
-The `mongo:8.0` download still failed with EOF when retried on 16 October. The official `mongo:8.3.9` pull succeeded, with digest `sha256:81a1c8842a09589fc8d5f285266f3340bf4abdf66700ba22988f14cc9b2b3118`. Both repository Mongo services now use this verified version, so no Mongo image override is needed. The final test recreated all four application containers and checked that their IDs changed while the MongoDB and C++ named volumes stayed the same.
-
-The three Node image builds used the optional CA secret for this computer's AVG HTTPS inspection. The final checks used the repository Dockerfiles, without temporary replacement Dockerfiles. Ordinary builds need no CA override on machines where npm already trusts the network certificate. Metro can still report certificate warnings for external development assets on this computer; its manifest and Android bundle were verified successfully.
-
-Earlier BlueStacks/Expo Go runs used local services and ADB reverse for `3000` and `8081`. The 15 October native run connected to the separate Compose API on `3002` and Metro on `8082`. Dana Amir logged in and saw both Olive Pizza orders, including the new website order at 21:40:53 for ₪42.00. Registration validation and the corrected coordinate-field layout were also checked after rebuilding the mobile image. Those earlier captures remain in [the application walkthrough](flows.md#website-cart-and-order-in-the-compose-environment); the complete 16 October native flow is recorded above.
-
-There is no separate mobile lint or typecheck script in `package.json`. iOS and physical-device LAN connections have not been verified.
-
-### Final review update
-
-The Web image was rebuilt after the registration-feedback change and the backend Node engine declaration correction. React compiled successfully; MongoDB, C++, Web and Metro remained healthy. The same Web image was deployed to port `3002` without recreating its databases or changing the mobile service.
-
-On port `3003`, the registration hints were gray initially, red after an invalid submission and gray again after leaving and reopening the form. Login, restaurant and dish creation, checkout and canceling order deletion were checked through the website. The user reported successful website dish and restaurant deletion. Confirmed website order deletion remains a joint-review check because the browser tool could not complete the native dialog; see [the recorded result](flows.md#final-website-registration-and-order-check).
-
-A read-only audit of the existing backend production dependencies reported `proxy-addr` 2.0.7 ([advisory](https://github.com/advisories/GHSA-jqcg-44mw-7w3h)) and `qs` 6.15.3 ([parsing advisory](https://github.com/advisories/GHSA-x5fp-wj9c-mxmx), [stringify advisory](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g)). No matching use was found in the application: Express has `trust proxy=false`, uses the simple query parser and JSON bodies, and the application does not call `qs.stringify`. The lockfile versions were retained; these are existing runtime-dependency advisories, not test failures or a claim that the dependencies are vulnerability-free.
-
-## Edge cases checked on 16 October 2026
-
-The user reported completing the manual application checks, including creating and deleting a temporary restaurant. The application has no request audit log, so the remaining database records do not prove every action or cancellation. Two additional accounts were present after the user checks; deleted restaurants and orders cannot be reconstructed from the current database.
-
-- All 39 API tests passed in a separate test database. These include duplicate registration, concurrent registration, malformed requests, ownership, deleted dishes, deleted restaurants and preserved order history.
-- Two controlled concurrent create/delete tests reproduced an orphan dish before the fix. Restaurant deletion now removes the parent first; a dish save that finishes after deletion is rejected and cleaned up.
-- Mobile source checks passed: 56 checkout checks and 26 cart checks. A pending order remains locked across cart changes and navigation. Receipts and uncertain-result messages remain visible, and old responses cannot clear another cart or account.
-- Web profile source checks passed: 50 checks for delayed responses, account changes, logout, same-account refresh and the initial profile-error/retry state. The checks use controlled React/fetch mocks, not browser timing.
-- Registration source checks passed: 8 validation checks and 7 gallery checks. Duplicate usernames produce a clear error and keep the form values. Profile pictures remain required by Exercise 5, pages 2–3. Account deletion is not an explicit requirement in Exercises 3–5 and was not added.
-
-The isolated final Compose runtime fixture contains Olive Pizza and two dishes. The API suite uses another MongoDB service and removes its temporary database after running. The six-restaurant demonstration dataset, including Corner Burger, was loaded only into the earlier local development database. Both clients display the data returned by their configured API; demonstration data is not hard-coded into the screens.
+The locked backend dependencies include `proxy-addr` 2.0.7 with a [critical advisory](https://github.com/advisories/GHSA-jqcg-44mw-7w3h) and `qs` 6.15.3 with [parsing](https://github.com/advisories/GHSA-x5fp-wj9c-mxmx) and [serialization](https://github.com/advisories/GHSA-4mjr-xmp4-gh2g) advisories. Their affected configurations are not used here: Express has `trust proxy=false`, uses the simple query parser and JSON bodies, and the application does not call `qs.stringify`. Patched releases are `proxy-addr` 2.0.8 and `qs` 6.16.0; the current lockfile retains the versions listed above.
