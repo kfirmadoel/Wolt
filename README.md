@@ -1,4 +1,4 @@
-# Wolt Web Application
+# Wolt -Web Application
 
 This guide contains the six commands for running and removing the web application with Docker Compose. Run them from the repository root, where `docker-compose.yml` is located.
 
