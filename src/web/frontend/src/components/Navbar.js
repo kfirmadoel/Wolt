@@ -3,11 +3,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import '../css/Navbar.css';
 
 function Navbar() {
     const { toggleTheme, isDark } = useTheme();
     const { user, isAuthenticated, logout, syncWithLocalStorage } = useAuth();
+    const { itemCount } = useCart();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const dropdownRef = useRef(null);
@@ -72,7 +74,7 @@ function Navbar() {
     const handleLogout = () => {
         setDropdownOpen(false);
         logout();
-        navigate('/login');
+        navigate('/');
     };
 
     const displayName = user?.name || user?.username || 'User';
@@ -115,14 +117,15 @@ function Navbar() {
                 {/* Right: Theme Toggle and Auth Controls */}
                 <div className="navbar-right">
                     {isAuthenticated && (
-                        <button
-                            type="button"
+                        <Link
+                            to="/cart"
                             className="navbar-cart-btn"
                             aria-label="Shopping cart"
                             title="Shopping cart"
                         >
                             <span aria-hidden="true">🛒</span>
-                        </button>
+                            {itemCount > 0 && <span className="navbar-cart-count">{itemCount}</span>}
+                        </Link>
                     )}
 
                     {/* Dark/Light Mode Switch */}
@@ -175,6 +178,14 @@ function Navbar() {
                                         onClick={() => setDropdownOpen(false)}
                                     >
                                         <span>👤</span> Profile
+                                    </Link>
+
+                                    <Link
+                                        to="/orders"
+                                        className="user-dropdown-item"
+                                        onClick={() => setDropdownOpen(false)}
+                                    >
+                                        <span>🧾</span> Order history
                                     </Link>
 
                                     <div className="user-dropdown-divider" />

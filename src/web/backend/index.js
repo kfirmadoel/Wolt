@@ -25,9 +25,13 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
-const PORT = 3000;
+const PORT = Number(process.env.BACKEND_PORT) || 3000;
 const HOST = '0.0.0.0'; // Listen on all network interfaces for Docker
 
-app.listen(PORT, HOST, () => {
-    console.log(`Server is running on ${HOST}:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, HOST, () => {
+        console.log(`Server is running on ${HOST}:${PORT}`);
+    });
+}
+
+module.exports = { app, PORT };

@@ -1,101 +1,78 @@
-const assert = require('assert');
-const request = require('supertest');
+const assert = require('node:assert/strict');
+const {
+    api,
+    authorized,
+    createUser,
+    uniqueName
+} = require('./helpers');
 
-const BASE = "http://web-server:3000";
+describe('Users API', () => {
+    let user;
 
-describe("Users API", () => {
-
-    let userId;
-    let token;
-    let otherToken;
-
-    const userDetails = (username) => ({
-        username,
-        password: "secret123",
-        name: "Kfir Cohen",
-        picture: "data:image/png;base64,aGVsbG8=",
-        role: "customer",
-        location: { x: 32.0853, y: 34.7818 }
+    before(async () => {
+        user = await createUser();
     });
 
-    it("17. should create user", async () => {
-        const res = await request(BASE)
-            .post("/api/users")
-            .send(userDetails("kfir123"));
+    it('creates a user and does not return their password in the profile', async () => {
+        const response = await authorized(api.get(`/api/users/${user.id}`), user.token);
 
-        assert.strictEqual(res.status, 201);
-        userId = res.body.id;
+        assert.equal(response.status, 200);
+        assert.equal(response.body.id, user.id);
+        assert.equal(response.body.username, user.username);
+        assert.equal(response.body.password, undefined);
     });
 
-    it("18. duplicate username should fail", async () => {
-        const res = await request(BASE)
-            .post("/api/users")
-            .send(userDetails("kfir123"));
+    it('rejects profile access without authentication', async () => {
+        const response = await api.get(`/api/users/${user.id}`);
 
-        // userModel.create() returns null on a duplicate username -
-        // check whichever status your controller maps that to
-        assert.ok(res.status === 400 || res.status === 409);
+        assert.equal(response.status, 403);
+        assert.ok(response.body.error);
     });
 
-    it("19. should reject profile access without a token", async () => {
-        const res = await request(BASE).get(`/api/users/${userId}`);
-        assert.strictEqual(res.status, 403);
+    it('rejects access to another user profile', async () => {
+        const otherUser = await createUser();
+        const response = await authorized(
+            api.get(`/api/users/${user.id}`),
+            otherUser.token
+        );
+
+        assert.equal(response.status, 403);
     });
 
-    it("20. should return a token on successful login", async () => {
-        const res = await request(BASE)
-            .post("/api/tokens")
-            .send({ username: "kfir123", password: "secret123" });
+    it('rejects duplicate usernames', async () => {
+        const response = await api.post('/api/users').send({
+            username: user.username,
+            password: 'secret123',
+            name: 'Duplicate User',
+            picture: 'data:image/png;base64,aGVsbG8=',
+            role: 'customer',
+            location: { x: 32.0853, y: 34.7818 }
+        });
 
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.id, userId);
-        token = res.body.token;
+        assert.equal(response.status, 409);
     });
 
-    it("21. should allow a user to read their own profile", async () => {
-        const res = await request(BASE)
-            .get(`/api/users/${userId}`)
-            .set("Authorization", `Bearer ${token}`);
+    it('rejects invalid registration data', async () => {
+        const response = await api.post('/api/users').send({
+            username: uniqueName('invalid-user'),
+            password: 'short',
+            name: 'Invalid User',
+            picture: 'data:image/png;base64,aGVsbG8=',
+            role: 'customer',
+            location: { x: 32.0853, y: 34.7818 }
+        });
 
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.username, "kfir123");
-        assert.strictEqual(res.body.name, "Kfir Cohen");
-        assert.strictEqual(res.body.password, undefined);
+        assert.equal(response.status, 400);
+        assert.ok(response.body.error);
     });
 
-    it("22. should reject reading another user's profile", async () => {
-        const res = await request(BASE)
-            .post("/api/users")
-            .send(userDetails("other-user"));
+    it('rejects incorrect login credentials', async () => {
+        const response = await api.post('/api/tokens').send({
+            username: user.username,
+            password: 'incorrect123'
+        });
 
-        assert.strictEqual(res.status, 201);
-
-        const loginRes = await request(BASE)
-            .post("/api/tokens")
-            .send({ username: "other-user", password: "secret123" });
-        otherToken = loginRes.body.token;
-
-        const profileRes = await request(BASE)
-            .get(`/api/users/${userId}`)
-            .set("Authorization", `Bearer ${otherToken}`);
-        assert.strictEqual(profileRes.status, 403);
-    });
-
-    it("21. should return an error for wrong password", async () => {
-        const res = await request(BASE)
-            .post("/api/tokens")
-            .send({ username: "kfir123", password: "wrongpass" });
-
-        assert.ok(res.status >= 400, "Expected an error status for bad credentials");
-        assert.ok(res.body.error, "Expected an error message in the response body");
-    });
-
-    it("24. should reject invalid registration fields", async () => {
-        const res = await request(BASE)
-            .post("/api/users")
-            .send({ ...userDetails("invalid-user"), password: "short" });
-
-        assert.strictEqual(res.status, 400);
-        assert.ok(res.body.error);
+        assert.equal(response.status, 401);
+        assert.ok(response.body.error);
     });
 });

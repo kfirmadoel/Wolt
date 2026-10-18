@@ -27,12 +27,29 @@ const calculateTotalPrice = (items, restaurantId) => {
     }, 0);
 };
 
+const createOrderItemsSnapshot = (items, restaurantId) => items.map((item) => {
+    const productId = item.productId ?? item.id;
+    const product = db.getProductByRestaurantAndId(productId, restaurantId);
+
+    return {
+        productId,
+        name: product.name,
+        description: product.description || "",
+        picture: product.picture || "",
+        category: product.category || "",
+        price: Number(product.price),
+        quantity: Number(item.quantity)
+    };
+});
+
 const create = (data) => {
+    const restaurant = db.getRestaurantById(data.restaurantId);
     const order = {
         id: 'order_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
         userId: data.userId,
         restaurantId: data.restaurantId,
-        items: data.items,       // [{ productId, quantity }, ...]
+        restaurantName: restaurant?.name || "",
+        items: createOrderItemsSnapshot(data.items, data.restaurantId),
         totalPrice: calculateTotalPrice(data.items, data.restaurantId),
         status: 'pending',
         createdAt: new Date().toISOString(),

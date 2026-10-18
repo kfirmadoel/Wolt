@@ -1,24 +1,12 @@
-const db = require('../database');
+const assert = require('node:assert/strict');
+const request = require('supertest');
+const { app } = require('../index');
 
-describe("FULL API TEST SUITE", () => {
+describe('API service', () => {
+    it('reports healthy status', async () => {
+        const response = await request(app).get('/api/health');
 
-    describe("Restaurants Suite", () => {
-        require("./restaurants.api.test");
-    });
-
-    describe("Products Suite", () => {
-        require("./products.api.test");
-    });
-
-    describe("Users Suite", () => {
-        require("./users.api.test");
-    });
-
-    describe("Orders Suite", () => {
-        require("./orders.api.test");
-    });
-
-    describe("Search Suite", () => {
-        require("./search.api.test");
+        assert.equal(response.status, 200);
+        assert.deepEqual(response.body, { status: 'ok' });
     });
 });

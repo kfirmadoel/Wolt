@@ -1,81 +1,78 @@
-const assert = require('assert');
-const request = require('supertest');
+const assert = require('node:assert/strict');
+const {
+    api,
+    authorized,
+    createUser,
+    createRestaurant,
+    createProduct
+} = require('./helpers');
 
-const BASE = "http://web-server:3000";
-
-describe("Products API", () => {
-
-    let restId;
+describe('Products API', () => {
+    let owner;
+    let restaurantId;
     let productId;
 
     before(async () => {
-        const res = await request(BASE)
-            .post("/api/restaurants")
-            .send({
-                name: "Test Rest",
-                description: "desc",
-                address: "addr",
-                phone: "050-0000000"
-            });
-
-        restId = res.headers.location.split("/").pop();
+        owner = await createUser('restaurant_owner');
+        restaurantId = await createRestaurant(owner.token);
+        productId = await createProduct(owner.token, restaurantId);
     });
 
-    it("12. should create product", async () => {
-        const res = await request(BASE)
-            .post(`/api/restaurants/${restId}/products`)
-            .send({
-                name: "Margherita",
-                description: "Classic tomato & mozzarella",
-                price: 45
-            });
-
-        assert.strictEqual(res.status, 201);
-        productId = res.headers.location.split("/").pop();
-    });
-
-    it("13. should list products", async () => {
-        const res = await request(BASE)
-            .get(`/api/restaurants/${restId}/products`);
-
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.length, 1);
-    });
-
-    it("14. should get product", async () => {
-        const res = await request(BASE)
-            .get(`/api/restaurants/${restId}/products/${productId}`);
-
-        assert.strictEqual(res.status, 200);
-        assert.strictEqual(res.body.id, productId);
-        assert.strictEqual(res.body.price, 45);
-    });
-
-    it("15. should update product price", async () => {
-        const res = await request(BASE)
-            .patch(`/api/restaurants/${restId}/products/${productId}`)
-            .send({ price: 49 });
-
-        assert.strictEqual(res.status, 204);
-
-        const check = await request(BASE)
-            .get(`/api/restaurants/${restId}/products/${productId}`);
-        assert.strictEqual(check.body.price, 49);
-    });
-
-    it("16. should delete product", async () => {
-        const res = await request(BASE)
-            .delete(`/api/restaurants/${restId}/products/${productId}`);
-
-        assert.strictEqual(res.status, 204);
-    });
-
-    // CLEANUP - restaurantId-scoped, safe with current models
     after(async () => {
-        const res = await request(BASE).get(`/api/restaurants/${restId}/products`);
-        for (const p of res.body) {
-            await request(BASE).delete(`/api/restaurants/${restId}/products/${p.id}`);
+        if (restaurantId) {
+            await authorized(
+                api.delete(`/api/restaurants/${restaurantId}`),
+                owner.token
+            );
         }
-        await request(BASE).delete(`/api/restaurants/${restId}`);
+    });
+
+    it('lists and retrieves products for a restaurant', async () => {
+        const list = await api.get(`/api/restaurants/${restaurantId}/products`);
+        const response = await api.get(
+            `/api/restaurants/${restaurantId}/products/${productId}`
+        );
+
+        assert.equal(list.status, 200);
+        assert.ok(list.body.some((product) => product.id === productId));
+        assert.equal(response.status, 200);
+        assert.equal(response.body.id, productId);
+        assert.equal(response.body.price, 25);
+    });
+
+    it('allows the restaurant owner to update and delete a product', async () => {
+        const update = await authorized(
+            api.patch(`/api/restaurants/${restaurantId}/products/${productId}`),
+            owner.token
+        ).send({ price: 49 });
+        const updated = await api.get(
+            `/api/restaurants/${restaurantId}/products/${productId}`
+        );
+        const deletion = await authorized(
+            api.delete(`/api/restaurants/${restaurantId}/products/${productId}`),
+            owner.token
+        );
+
+        assert.equal(update.status, 204);
+        assert.equal(updated.body.price, 49);
+        assert.equal(deletion.status, 204);
+    });
+
+    it('rejects a product with a non-positive price', async () => {
+        const response = await authorized(
+            api.post(`/api/restaurants/${restaurantId}/products`),
+            owner.token
+        ).send({ name: 'Invalid product', price: 0 });
+
+        assert.equal(response.status, 400);
+        assert.ok(response.body.error);
+    });
+
+    it('returns 404 for an unknown product', async () => {
+        const response = await api.get(
+            `/api/restaurants/${restaurantId}/products/not-a-real-product`
+        );
+
+        assert.equal(response.status, 404);
     });
 });

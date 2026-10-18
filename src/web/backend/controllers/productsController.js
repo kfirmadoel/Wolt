@@ -13,6 +13,12 @@ const createProduct = (req, res) => {
     if (!req.body.name || !req.body.price || req.body.price <= 0) {
         return res.status(400).json({ error: "Name and a valid price greater than 0 are required" });
     }
+    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
+        return res.status(400).json({ error: "Category must be a string" });
+    }
+    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
+        return res.status(400).json({ error: "Picture must be a string" });
+    }
 
     const newProduct = productModel.create(req.params.id, req.body);
     
@@ -55,6 +61,12 @@ const updateProduct = (req, res) => {
     if (req.body.price !== undefined && req.body.price <= 0) {
         return res.status(400).json({ error: "Price must be greater than 0" });
     }  
+    if (req.body.category !== undefined && typeof req.body.category !== 'string') {
+        return res.status(400).json({ error: "Category must be a string" });
+    }
+    if (req.body.picture !== undefined && typeof req.body.picture !== 'string') {
+        return res.status(400).json({ error: "Picture must be a string" });
+    }
 
     const product = productModel.updateProduct( req.params.pId, req.params.id, req.body);
     
