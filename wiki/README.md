@@ -45,6 +45,6 @@ Open **Profile** on the website or **My profile** on mobile to view account deta
 
 ## Demo data
 
-See [demo restaurants and photo licenses](../src/web/backend/demo/README.md). The data is not inserted automatically on startup. It can be entered through the owner screens or created with the existing API using the steps in that document.
+Load the initial six restaurants and twelve dishes during [first setup](run.md#load-initial-data). Sign in as `wolt_demo_owner` with the password chosen during import to manage them, or register another account. The import preserves existing records and is not run automatically at startup. See [demo restaurants and photo licenses](../src/web/backend/demo/README.md) for details.
 
 See [test results](run.md#verification-status) for the test suites and environment used.

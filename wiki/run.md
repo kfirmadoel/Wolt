@@ -60,6 +60,39 @@ Open [the website](http://localhost:3000). The Docker build compiles React and c
 
 For a readiness check, open [the API health endpoint](http://localhost:3000/api/health), which returns `{"status":"ok"}` only while MongoDB is connected. Metro exposes its status at [http://localhost:8081/status](http://localhost:8081/status).
 
+## Load initial data
+
+Complete the first setup by importing the six demo restaurants and twelve dishes. Choose a password used only for the demo owner account; it must contain at least eight characters, including letters and numbers.
+
+PowerShell:
+
+```powershell
+$env:DEMO_PASSWORD = Read-Host 'Choose a demo password (8+ characters, letters and numbers)'
+```
+
+Linux/macOS Bash:
+
+```bash
+read -rs -p 'Choose a demo password: ' DEMO_PASSWORD
+export DEMO_PASSWORD
+```
+
+Then run from the repository root:
+
+```bash
+docker compose exec -e DEMO_PASSWORD web-server npm run demo
+```
+
+Refresh either client to see the restaurants and menus. To manage them, sign in as `wolt_demo_owner` with the password you chose. This account has the display name **Demo Owner**, the restaurant-owner role and a coffee illustration as its profile picture. Register a separate customer account for ordering.
+
+The importer uses the existing Mongoose models and stores the supplied pictures in MongoDB. It adds missing demo records without changing existing data or passwords. Repeating it restores deleted demo records and preserves edits to records that still exist. For later imports, the password is unnecessary:
+
+```bash
+docker compose exec web-server npm run demo
+```
+
+Run one import at a time. It checks for conflicting usernames, owners and record IDs before inserting records. Keep the chosen password locally; do not commit it. See [demo data and photo credits](../src/web/backend/demo/README.md) for the local development command.
+
 ## Local certificate error during npm installation
 
 If HTTPS inspection causes a certificate verification error during `npm ci`, supply its trusted public root CA to the build. Docker documents [CA trust for HTTPS inspection](https://docs.docker.com/engine/network/ca-certs/) and [temporary build secret mounts](https://docs.docker.com/build/building/secrets/). Skip this section when the build succeeds without a custom certificate.
@@ -111,7 +144,7 @@ Port `8081` loads the app bundle; port `3000` loads its data. If the app opens b
 
 ## Data, stopping and restarting
 
-A new `mongo-data` volume starts empty. Register through either client, then use a restaurant-owner account to add a restaurant and its menu. [Demo data and image credits](../src/web/backend/demo/README.md) explain how to recreate the sample restaurants through the UI or API. Starting the server does not import `restaurants.json` or copy a database from another computer.
+A new `mongo-data` volume is populated by the [initial data import](#load-initial-data) during setup. Starting the server does not import the data automatically. Existing volumes retain their users, restaurants, menus and orders; the importer adds only missing demo records.
 
 | Volume | Container directory | Contents |
 | --- | --- | --- |

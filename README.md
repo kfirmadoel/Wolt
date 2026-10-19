@@ -27,6 +27,8 @@ docker compose ps
 
 The default setup starts MongoDB, the C++ server, the Node server with the built React website, and Expo/Metro. Open [http://localhost:3000](http://localhost:3000) for the website. Expo Go and the Android emulator run on the host computer and connect to Metro on port `8081`.
 
+Complete the first setup by [loading the demo data](wiki/run.md#load-initial-data). This creates six restaurants and twelve dishes with pictures, plus the `wolt_demo_owner` account. Choose a password for this demo account when loading a new database.
+
 See [the run guide](wiki/run.md) for Windows/Linux commands, connecting the emulator, local development and stopping the services.
 
 ## Tests
@@ -46,7 +48,7 @@ The container suites passed with 39 API tests and 14 C++ tests. Saved applicatio
 
 MongoDB uses the `mongo-data` volume. Recommendation history uses the `cpp-data` volume. Stopping or recreating the containers preserves these volumes.
 
-A fresh database is empty. Register test accounts and add restaurants and dishes through the owner screens. The [demo data and photo credits](src/web/backend/demo/README.md) include six fictional restaurants, sample menus and reusable food photos. These files are references for creating records; the clients always load their data from the API.
+The initial data is loaded once during setup, rather than on every server start. Repeating the import preserves existing records and edits, adds missing demo records and does not create duplicates. Both clients load restaurants and dishes from the API. See [demo data and photo credits](src/web/backend/demo/README.md) for the import command and sample account details.
 
 ## Work process
 
