@@ -53,6 +53,9 @@ function Login() {
 
     return (
         <div className="Auth-page">
+            <Link to="/" className="auth-brand-link" aria-label="Wolt home">
+                <span>wolt</span>
+            </Link>
             <h1>Log in</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form className="Auth-form" onSubmit={handleSubmit}>

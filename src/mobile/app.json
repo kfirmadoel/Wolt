@@ -2,6 +2,7 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "wolt-clone",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,8 +23,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar",
-      "expo-secure-store"
+      "expo-status-bar"
     ]
   }
 }

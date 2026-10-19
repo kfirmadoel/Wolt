@@ -1,7 +1,8 @@
-FROM gcc:latest
+FROM gcc:14-bookworm
 
 # Install CMake
-RUN apt-get update && apt-get install -y cmake
+RUN apt-get update && apt-get install -y --no-install-recommends cmake \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory inside the container
 COPY . /usr/src/wolt_project
@@ -11,9 +12,11 @@ WORKDIR /usr/src/wolt_project
 RUN mkdir -p data
 
 # build the application
-RUN mkdir build
+RUN mkdir -p build
 WORKDIR /usr/src/wolt_project/build
-RUN cmake .. && make server
+RUN cmake .. && cmake --build . --target server
 
 # Set the working directory back to the project root for running the application
 WORKDIR /usr/src/wolt_project
+EXPOSE 12345
+CMD ["./build/server", "12345"]

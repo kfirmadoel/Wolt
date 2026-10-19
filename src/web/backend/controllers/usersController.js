@@ -3,6 +3,9 @@ const userService = require('../services/userService');
 const jwtService = require('../services/jwtService');
 
 const createUser = async (req, res) => {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+        return res.status(400).json({ error: "Request body must be an object" });
+    }
     const { username, password, name, picture, role, location } = req.body;
 
     if (typeof username !== 'string' || !username.trim() || typeof password !== 'string' || !password) {
@@ -51,6 +54,9 @@ const getUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+        return res.status(400).json({ error: "Request body must be an object" });
+    }
     const { username, password } = req.body;
 
     // typeof checks block NoSQL injection such as {"username": {"$ne": null}}
@@ -68,9 +74,13 @@ const loginUser = async (req, res) => {
 };
 
 const updateUserLocation = async (req, res) => {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+        return res.status(400).json({ error: "Request body must be an object" });
+    }
     const { location } = req.body;
 
-    if (!location || typeof location.x !== 'number' || typeof location.y !== 'number' ||
+    if (!location || typeof location !== 'object' || Array.isArray(location) ||
+        !Number.isFinite(location.x) || !Number.isFinite(location.y) ||
         location.x < -90 || location.x > 90 || location.y < -180 || location.y > 180) {
         return res.status(400).json({ error: "Location must contain numeric x and y coordinates" });
     }

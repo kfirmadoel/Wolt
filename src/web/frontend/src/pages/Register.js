@@ -17,6 +17,7 @@ function Register() {
     const [longitude, setLongitude] = useState('');
     const [role, setRole] = useState('customer');
     const [error, setError] = useState('');
+    const [submitted, setSubmitted] = useState(false);
     const navigate = useNavigate();
 
     // Live validation state for password requirements
@@ -46,6 +47,7 @@ function Register() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitted(true);
         setError('');
 
         if (!username.trim() || !password || !confirmPassword || !name.trim() || !picture || !latitude || !longitude) {
@@ -103,23 +105,26 @@ function Register() {
 
     return (
         <div className="Auth-page">
+            <Link to="/" className="auth-brand-link" aria-label="Wolt home">
+                <span>wolt</span>
+            </Link>
             <Link to="/login" className="auth-back-link">← Back to log in</Link>
             <h1>Create account</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form className="Auth-form" onSubmit={handleSubmit}>
+            <form className="Auth-form" onSubmit={handleSubmit} onInvalid={() => setSubmitted(true)}>
                 <InputField type="text" placeholder="Username *" value={username} onChange={(e) => setUsername(e.target.value)} required />
 
                 <InputField type="password" placeholder="Password *" value={password} onChange={(e) => setPassword(e.target.value)} required>
                     <ul style={{ listStyleType: 'none', fontSize: '0.8em', margin: 0, paddingLeft: '20px' }}>
-                        <li style={{ color: isLongEnough ? 'green' : 'red' }}>{isLongEnough ? '✓' : '✗'} At least 8 characters</li>
-                        <li style={{ color: hasLetterAndNumber ? 'green' : 'red' }}>{hasLetterAndNumber ? '✓' : '✗'} Letters and numbers</li>
+                        <li style={{ color: submitted ? (isLongEnough ? 'green' : 'red') : 'var(--text-muted)' }}>{submitted ? (isLongEnough ? '✓' : '✗') : ''} At least 8 characters</li>
+                        <li style={{ color: submitted ? (hasLetterAndNumber ? 'green' : 'red') : 'var(--text-muted)' }}>{submitted ? (hasLetterAndNumber ? '✓' : '✗') : ''} Letters and numbers</li>
                     </ul>
                 </InputField>
 
                 <InputField type="password" placeholder="Confirm Password *" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required>
                     {confirmPassword.length > 0 && (
-                        <p style={{ fontSize: '0.8em', margin: 0, color: passwordsMatch ? 'green' : 'red' }}>
-                            {passwordsMatch ? '✓ Passwords match' : '✗ Passwords do not match'}
+                        <p style={{ fontSize: '0.8em', margin: 0, color: submitted ? (passwordsMatch ? 'green' : 'red') : 'var(--text-muted)' }}>
+                            {submitted ? (passwordsMatch ? '✓ Passwords match' : '✗ Passwords do not match') : 'Passwords must match'}
                         </p>
                     )}
                 </InputField>

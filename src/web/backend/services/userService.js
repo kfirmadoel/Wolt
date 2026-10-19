@@ -18,14 +18,19 @@ const create = async (data) => {
         location: data.location
     });
 
-    await newUser.save();
+    try {
+        await newUser.save();
+    } catch (error) {
+        if (error.code === 11000 && error.keyPattern?.username) return null;
+        throw error;
+    }
     return newUser;
 };
 
 const getById = async (id) => {
     const user = await User.findOne({ id });
     if (!user) return null;
-    const { password, phone, address, role, ...safeUser } = user.toObject();
+    const { password, phone, address, ...safeUser } = user.toObject();
     return safeUser;
 };
 

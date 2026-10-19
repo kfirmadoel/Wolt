@@ -1,5 +1,6 @@
 // services/restaurantService.js
 const Restaurant = require('../models/restaurantModel');
+const Product = require('../models/productModel');
 
 const getAll = async () => {
     return await Restaurant.find({});
@@ -18,7 +19,7 @@ const create = async (data, ownerId) => {
     const restaurant = new Restaurant({
         id: newId,
         ownerId,
-        name: data.name,
+        name: data.name.trim(),
         description: data.description || "",
         address: data.address || "",
         phone: data.phone || "",
@@ -35,16 +36,27 @@ const create = async (data, ownerId) => {
 };
 
 const update = async (id, data) => {
-    const { name, description, address, phone, category, isPromoted, picture, location } = data;
+    const update = {};
+    if (data.name !== undefined) update.name = data.name.trim();
+    if (data.description !== undefined) update.description = data.description;
+    if (data.address !== undefined) update.address = data.address;
+    if (data.phone !== undefined) update.phone = data.phone;
+    if (data.category !== undefined) update.category = data.category;
+    if (data.isPromoted !== undefined) update.isPromoted = data.isPromoted;
+    if (data.picture !== undefined) update.picture = data.picture;
+    if (data.location !== undefined) update.location = data.location;
     return await Restaurant.findOneAndUpdate(
         { id },
-        { name, description, address, phone, category, isPromoted, picture, location },
-        { new: true, runValidators: true, omitUndefined: true }
+        update,
+        { new: true, runValidators: true }
     );
 };
 
 const deleteRestaurant = async (id) => {
-    return await Restaurant.findOneAndDelete({ id });
+    const restaurant = await Restaurant.findOneAndDelete({ id });
+    if (!restaurant) return null;
+    await Product.deleteMany({ restaurantId: id });
+    return restaurant;
 };
 
 module.exports = {

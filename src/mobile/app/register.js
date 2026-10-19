@@ -1,7 +1,7 @@
 // app/register.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import InputField from '../components/InputField';
 import { API_URL, COLORS } from '../config.js';
@@ -15,6 +15,8 @@ const PICKER_OPTIONS = {
 };
 
 export default function RegisterScreen() {
+  const segments = useSegments();
+  const isActive = segments[0] === 'register';
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -26,6 +28,11 @@ export default function RegisterScreen() {
   const [submitted, setSubmitted] = useState(false); // show field errors only after first attempt
   const [serverError, setServerError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setSubmitted(false);
+    setServerError('');
+  }, [isActive]);
 
   // ---- validation (recomputed on every render, so it is live) ----
   const isLongEnough = password.length >= 8;
@@ -45,8 +52,6 @@ export default function RegisterScreen() {
   if (!picture) errors.picture = 'A profile picture is required';
 
   const show = (field) => (submitted ? errors[field] : undefined);
-  // confirm-password mismatch is shown live as soon as the user starts typing it
-  const confirmError = confirmPassword && password !== confirmPassword ? errors.confirmPassword : show('confirmPassword');
 
   // ---- picture: gallery or camera ----
   const handleResult = (result) => {
@@ -57,12 +62,11 @@ export default function RegisterScreen() {
   };
 
   const pickFromGallery = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert('Permission needed', 'Allow photo access in your phone settings to choose a picture.');
-      return;
+    try {
+      handleResult(await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS));
+    } catch (err) {
+      Alert.alert('Picture error', 'Could not open the picture. Please try again.');
     }
-    handleResult(await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS));
   };
 
   const takePhoto = async () => {
@@ -116,7 +120,9 @@ export default function RegisterScreen() {
   };
 
   const rule = (ok, text) => (
-    <Text style={{ color: ok ? COLORS.ok : COLORS.error, fontSize: 12 }}>{ok ? '✓' : '✗'} {text}</Text>
+    <Text style={{ color: submitted ? (ok ? COLORS.ok : COLORS.error) : '#777', fontSize: 12 }}>
+      {submitted ? (ok ? '✓ ' : '✗ ') : ''}{text}
+    </Text>
   );
 
   return (
@@ -133,16 +139,19 @@ export default function RegisterScreen() {
       </InputField>
 
       <InputField placeholder="Confirm password *" value={confirmPassword} onChangeText={setConfirmPassword}
-        secureTextEntry error={confirmError} />
+        secureTextEntry error={show('confirmPassword')} />
 
       <InputField placeholder="Display name *" value={name} onChangeText={setName} error={show('name')} />
 
       <View style={styles.row}>
-        <InputField placeholder="Latitude *" value={latitude} onChangeText={setLatitude} keyboardType="numeric"
-          style={{ flex: 1 }} error={show('latitude')} />
-        <View style={{ width: 10 }} />
-        <InputField placeholder="Longitude *" value={longitude} onChangeText={setLongitude} keyboardType="numeric"
-          style={{ flex: 1 }} error={show('longitude')} />
+        <View style={styles.coordinateField}>
+          <InputField placeholder="Latitude *" value={latitude} onChangeText={setLatitude} keyboardType="numeric"
+            error={show('latitude')} />
+        </View>
+        <View style={styles.coordinateField}>
+          <InputField placeholder="Longitude *" value={longitude} onChangeText={setLongitude} keyboardType="numeric"
+            error={show('longitude')} />
+        </View>
       </View>
       <Text style={styles.hint}>Coordinates are used to sort nearby restaurants.</Text>
 
@@ -177,7 +186,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: COLORS.primary },
   errorText: { color: COLORS.error, marginBottom: 15, textAlign: 'center', fontWeight: 'bold' },
   fieldError: { color: COLORS.error, fontSize: 12, marginBottom: 10, paddingLeft: 5 },
-  row: { flexDirection: 'row' },
+  row: { flexDirection: 'row', gap: 10 },
+  coordinateField: { flex: 1, minWidth: 0 },
   hint: { fontSize: 12, color: 'gray', marginBottom: 15, textAlign: 'center' },
   imageButton: { height: 50, borderWidth: 1, borderColor: COLORS.primary, borderStyle: 'dashed', borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   imageButtonText: { color: COLORS.primary, fontWeight: 'bold' },

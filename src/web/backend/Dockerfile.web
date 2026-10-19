@@ -1,27 +1,30 @@
-# Use official Node.js as image
-FROM node:18-alpine
+FROM node:24-bookworm-slim AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+# Optional trusted CA for local HTTPS inspection during package installation.
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci
+COPY frontend/ ./
+RUN npm run build
 
-# Set the working directory inside the container
-WORKDIR /usr/src/wolt_project
+FROM node:24-bookworm-slim AS backend-base
+WORKDIR /app/backend
+COPY backend/package*.json ./
 
-# Copy packages
-COPY package*.json ./
+FROM backend-base AS test
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci
+COPY backend/ ./
+CMD ["npm", "test"]
 
-# Install dependencies
-RUN npm install
-
-# Only copy the web server code, not the entire project
-COPY . .
-
-# Expose the port that the Node.js server will listen on
+FROM backend-base AS runtime
+ENV NODE_ENV=production
+RUN --mount=type=secret,id=npm_ca \
+    if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi && npm ci --omit=dev
+COPY backend/ ./
+COPY --from=frontend-build /app/frontend/build /app/frontend/build
 EXPOSE 3000
-
-# Health check to ensure the server is running
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://127.0.0.1:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
-
-# Allow running in normal server mode or test mode via `TEST_MODE` env var.
-# - Default: run the server
-# - Set `TEST_MODE=true` to run `npm test` inside the image
-CMD ["sh", "-c", "if [ \"$TEST_MODE\" = \"true\" ]; then npm test; else node index.js; fi"]
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=5 \
+  CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+CMD ["node", "index.js"]
 

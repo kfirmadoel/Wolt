@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
-    "test": "mocha tests/**/*.test.js --exit"
+    "demo": "node demo/load.js",
+    "test": "mocha tests/api.test.js --timeout 10000",
+    "test:demo": "mocha tests/demo.test.js --timeout 20000"
   },
   "keywords": [
     "wolt",
@@ -29,6 +31,6 @@
     "supertest": "^6.3.3"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.19.0"
   }
 }
