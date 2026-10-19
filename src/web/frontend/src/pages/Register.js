@@ -105,6 +105,9 @@ function Register() {
 
     return (
         <div className="Auth-page">
+            <Link to="/" className="auth-brand-link" aria-label="Wolt home">
+                <span>wolt</span>
+            </Link>
             <Link to="/login" className="auth-back-link">← Back to log in</Link>
             <h1>Create account</h1>
             {error && <p style={{ color: 'red' }}>{error}</p>}

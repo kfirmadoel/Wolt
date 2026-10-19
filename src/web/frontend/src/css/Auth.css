@@ -85,6 +85,20 @@
     transform: translateY(0);
 }
 
+.auth-brand-link {
+    margin-bottom: 24px;
+    color: var(--wolt-blue);
+    font-size: 2.4rem;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    text-decoration: none;
+}
+
+.auth-brand-link:hover {
+    color: var(--wolt-blue-hover);
+}
+
 .register-coordinate-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;

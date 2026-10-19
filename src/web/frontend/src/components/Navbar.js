@@ -74,7 +74,7 @@ function Navbar() {
     const handleLogout = () => {
         setDropdownOpen(false);
         logout();
-        navigate('/login');
+        navigate('/');
     };
 
     const displayName = user?.name || user?.username || 'User';
