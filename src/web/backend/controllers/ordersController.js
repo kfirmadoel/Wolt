@@ -1,11 +1,11 @@
-// src/web/controllers/ordersController.js
-const orderModel = require('../models/orderModel');
+// controllers/ordersController.js
+const orderService = require('../services/orderService');
 
-const getAllOrders = (req, res) => {
-    res.status(200).json(orderModel.getByUserId(req.userId));
+const getAllOrders = async (req, res) => {
+    res.status(200).json(await orderService.getByUserId(req.userId));
 };
 
-const createOrder = (req, res) => {
+const createOrder = async (req, res) => {
     const { restaurantId, items } = req.body;
 
     if (!restaurantId) {
@@ -15,42 +15,35 @@ const createOrder = (req, res) => {
         return res.status(400).json({ error: "Order must contain at least one item" });
     }
 
-    const newOrder = orderModel.create({ userId: req.userId, restaurantId, items });
-
+    const newOrder = await orderService.create({ userId: req.userId, restaurantId, items });
     res.status(201).location(`/api/orders/${newOrder.id}`).send();
 };
 
-const getOrderById = (req, res) => {
-    const order = orderModel.getById(req.params.id);
-
+const getOrderById = async (req, res) => {
+    const order = await orderService.getById(req.params.id);
     if (!order) {
         return res.status(404).json({ error: "Order not found" });
     }
-
     res.status(200).json(order);
 };
 
-const updateOrder = (req, res) => {
+const updateOrder = async (req, res) => {
     if (req.body.status !== undefined && req.body.status.trim() === "") {
         return res.status(400).json({ error: "Status cannot be empty" });
     }
 
-    const updatedOrder = orderModel.update(req.params.id, req.body);
-
+    const updatedOrder = await orderService.update(req.params.id, req.body);
     if (!updatedOrder) {
         return res.status(404).json({ error: "Order not found" });
     }
-
     res.status(204).send();
 };
 
-const deleteOrder = (req, res) => {
-    const success = orderModel.deleteOrder(req.params.id);
-
+const deleteOrder = async (req, res) => {
+    const success = await orderService.deleteOrder(req.params.id);
     if (!success) {
         return res.status(404).json({ error: "Order not found" });
     }
-
     res.status(204).send();
 };
 

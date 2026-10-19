@@ -1,10 +1,11 @@
 // controllers/searchController.js
-const searchModel = require('../models/searchModel');
+const searchService = require('../services/searchService');
 
-const search = (req,res) => {
-    const response = searchModel.search(req.params.query);
+const search = async (req, res) => {
+    const response = await searchService.search(req.params.query);
     res.status(200).json(response);
 };
+
 module.exports = {
     search
 };

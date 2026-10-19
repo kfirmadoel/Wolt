@@ -1,48 +1,33 @@
-const db = require('../database');
+// models/productModel.js
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const getById = (pId, restaurantId) => {
-    return db.getProductByRestaurantAndId(pId, restaurantId);
-};
+const Product = new Schema({
+    id: { 
+        type: String, 
+        unique: true 
+    },
+    restaurantId: { 
+        type: String, 
+        required: true 
+    },
+    name: { 
+        type: String, 
+        required: true 
+    },
+    description: { 
+        type: String 
+    },
+    price: { 
+        type: Number, 
+        required: true,
+        validate: {
+            validator: function(value) {
+                return value > 0;
+            },
+            message: 'Price must be strictly greater than 0'
+        }
+    }
+});
 
-const getAllByRestaurant = (restaurantId) => {
-    return db.getProductsByRestaurantId(restaurantId);
-};
-
-const create = (restaurantId, data) => {
-    const product = {
-        id: 'prod_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-        restaurantId,
-        name: data.name,
-        description: data.description || "",
-        // Ensure price is stored as a number (accept numeric strings)
-        price: Number(data.price),
-    };
-    db.addProduct(product);
-    return product;
-};
-
-const updateProduct = (pId, restaurantId, data) => {
-    const product = db.getProductByRestaurantAndId(pId, restaurantId);
-    if (!product) return null;
-    
-    product.name = data.name ?? product.name;
-    product.description = data.description ?? product.description;
-    product.price = data.price !== undefined ? Number(data.price) : product.price;
-    
-    return product;
-}
-
-const deleteProduct = (pId, restaurantId) => {
-    const product = db.getProductByRestaurantAndId(pId, restaurantId);
-    if (!product) return null;
-    
-    return db.deleteProduct(pId);
-};
-
-module.exports = {
-    getById,
-    getAllByRestaurant,
-    create,
-    updateProduct,
-    deleteProduct
-};
+module.exports = mongoose.model('Product', Product);
