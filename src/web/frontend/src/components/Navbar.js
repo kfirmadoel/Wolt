@@ -11,6 +11,7 @@ function Navbar() {
     const { user, isAuthenticated, logout, syncWithLocalStorage } = useAuth();
     const { itemCount } = useCart();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [logoutRequested, setLogoutRequested] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
@@ -20,6 +21,14 @@ function Navbar() {
     useEffect(() => {
         syncWithLocalStorage();
     }, [location.pathname, syncWithLocalStorage]);
+
+    // Leave protected pages before clearing the session.
+    useEffect(() => {
+        if (logoutRequested && location.pathname === '/') {
+            logout();
+            setLogoutRequested(false);
+        }
+    }, [logoutRequested, location.pathname, logout]);
 
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
@@ -73,7 +82,7 @@ function Navbar() {
     // Handle logout action
     const handleLogout = () => {
         setDropdownOpen(false);
-        logout();
+        setLogoutRequested(true);
         navigate('/');
     };
 

@@ -35,7 +35,11 @@ export default function LoginScreen() {
         setServerError(res.status === 401 ? 'Wrong username or password' : data.error || 'Login failed');
         return;
       }
-      await signIn(data.token, data.id); // saves to device; Gate then opens the app
+      try {
+        await signIn(data.token, data.id); // saves to device; Gate then opens the app
+      } catch (err) {
+        setServerError('Could not save your login on this device. Please try again.');
+      }
     } catch (err) {
       setServerError('Could not reach the server. Check your connection and try again.');
     } finally {
