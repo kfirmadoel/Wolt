@@ -4,6 +4,8 @@ The project includes a React website and a React Native mobile app. Both clients
 
 Users can browse and search restaurants, view menus, manage a cart and create, edit or delete their orders. Restaurant owners can manage their restaurants and dishes. Both clients include a profile page and light/dark themes.
 
+Login uses JWT. The mobile app saves the token and user ID with AsyncStorage so the user stays signed in after reopening the app.
+
 ## Project structure
 
 | Directory | Contents |
@@ -14,6 +16,18 @@ Users can browse and search restaurants, view menus, manage a cart and create, e
 | `src/web/frontend` | React website |
 | `src/mobile` | React Native app with Expo |
 | `wiki` | Run instructions and application walkthrough |
+
+## Exercise branches
+
+| Exercise | Branch |
+| --- | --- |
+| 1 | [ex1](https://github.com/kfirmadoel/Wolt/tree/ex1) |
+| 2 | [ex2](https://github.com/kfirmadoel/Wolt/tree/ex2) |
+| 3 | [main-ex3](https://github.com/kfirmadoel/Wolt/tree/main-ex3) |
+| 4 | [ex4](https://github.com/kfirmadoel/Wolt/tree/ex4) |
+| 5 | [ex5](https://github.com/kfirmadoel/Wolt/tree/ex5) |
+
+Use the README on the selected branch for that exercise's run instructions. Exercise 5 feature branches are reviewed before merging into `ex5`; the earlier exercise branches keep their own versions.
 
 ## How to build and run
 
@@ -38,11 +52,12 @@ Run each suite separately from the project root:
 ```bash
 docker compose --profile api run --build --rm api-tests
 docker compose --profile unit run --build --rm cpp-tests
+docker compose --profile api run --build --rm api-tests npm run test:demo
 ```
 
 API tests use their own MongoDB service and a temporary database. They call an imported Express app, not the running application server. The C++ tests do not mount the recommendation server's data volume. See [test details](wiki/run.md#tests) for the local test command.
 
-The container suites passed with 39 API tests and 14 C++ tests. Saved application and recommendation data were retained after service restart and container recreation. See [test results](wiki/run.md#verification-status) and the [application walkthrough with screenshots](wiki/flows.md).
+The container suites passed with 39 API tests, 14 C++ tests and 8 demo import tests. Saved application and recommendation data were retained after service restart and container recreation. See [test results](wiki/run.md#verification-status) and the [application walkthrough with screenshots](wiki/flows.md).
 
 ## Data and images
 

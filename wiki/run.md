@@ -175,9 +175,12 @@ Run from the repository root:
 ```bash
 docker compose --profile api run --build --rm api-tests
 docker compose --profile unit run --build --rm cpp-tests
+docker compose --profile api run --build --rm api-tests npm run test:demo
 ```
 
 The `api` profile starts `mongo-tests` for the test runner. The tests create a uniquely named `wolt_test_...` database, call the imported Express app through Supertest, and drop only that database during cleanup. They do not send requests to `web-server` or use the application's `mongo-data` volume. Product detail reads in this suite are public, so they do not add views to the shared C++ server.
+
+The demo import suite uses a separate temporary database. Its eight checks cover the initial data and owner login, repeat imports, preservation of edits and orders, missing records, invalid passwords and ID or ownership conflicts. See [import tests](../src/web/backend/demo/README.md#import-tests) for details.
 
 The `unit` profile builds and runs the C++ GoogleTest executable in its own container, without `cpp-data`. Each command exits with its suite's result. The Mongo test container can remain running afterwards; stop it with `docker compose --profile api stop mongo-tests`, or use the shutdown command above when finished with the whole environment.
 
@@ -282,12 +285,15 @@ The Docker setup was tested with the repository's Dockerfiles and MongoDB 8.3.9.
 | Build and startup | Application and test images built; MongoDB, C++, Web and Metro became healthy |
 | API suite | 39 tests passed in a temporary database, which was removed after the run |
 | C++ suite | 14 tests passed |
+| Demo import suite | 8 tests passed in a separate temporary database |
 | Data persistence | MongoDB records and C++ recommendation history survived service restart and container recreation with the same named volumes |
 | Website routing | Direct React page URLs loaded the app; unknown API routes returned JSON 404 |
+| Website login and logout | Guests could open the home page; logout returned to the home page, and personal pages required login |
 | Metro | Android manifest and JavaScript bundle loaded successfully |
-| Mobile flows | Registration with picture selection, login, checkout, order editing and order deletion worked against the Compose API |
+| Mobile login | Login was restored after reopening the app; logout cleared the saved login |
+| Website and mobile checkout | Login, menu loading and checkout worked against the Compose API; both orders appeared in the same account's mobile history |
 
-The API tests cover input validation, duplicate and concurrent registration, ownership, deleted restaurants and dishes, and preserved order history. Run the commands in [Tests](#tests) to repeat the API and C++ suites.
+The API tests cover input validation, duplicate and concurrent registration, ownership, deleted restaurants and dishes, and preserved order history. Run the commands in [Tests](#tests) to repeat the API, C++ and demo import suites.
 
 See the [application walkthrough](flows.md) for screenshots and the main client flows. iOS and physical-device LAN connections have not been tested.
 

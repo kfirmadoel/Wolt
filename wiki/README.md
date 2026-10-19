@@ -4,11 +4,13 @@ Start with [Build and run](run.md). It covers the full Compose setup, connecting
 
 See [Application flows and screenshots](flows.md) for examples of the screens and main operations.
 
+The [exercise branch list](../README.md#exercise-branches) links to the separate versions of Exercises 1–5.
+
 Both clients use the same API and MongoDB database. The website is served by Node on port `3000`; Expo/Metro serves the mobile JavaScript bundle on port `8081`. The emulator and Expo Go run outside Docker.
 
 ## Application walkthrough
 
-The examples use fictional accounts and demonstration restaurants. Register a customer to browse and order, or a restaurant owner to manage restaurants and menus.
+The examples use fictional accounts and demonstration restaurants. Guests can browse the restaurant list. Register a customer to place orders, or a restaurant owner to manage restaurants and menus.
 
 ### Registration and login
 
