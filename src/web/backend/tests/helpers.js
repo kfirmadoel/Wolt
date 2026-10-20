@@ -19,6 +19,9 @@ process.env.MONGO_URI = mongoUri;
 process.env.JWT_SECRET = randomBytes(32).toString('hex');
 process.env.NODE_ENV = 'test';
 
+// Check the empty database before Mongoose creates collections and indexes.
+mongoose.set('autoCreate', false);
+mongoose.set('autoIndex', false);
 const { app } = require('../index');
 const api = request(app);
 const picture = 'data:image/png;base64,' + fs.readFileSync(path.join(__dirname, 'fixtures/picture.png')).toString('base64');
@@ -34,6 +37,7 @@ const connectTestDatabase = async () => {
     const collections = await mongoose.connection.db.listCollections({}, { nameOnly: true }).toArray();
     assert.strictEqual(collections.length, 0, "Refusing to run against a nonempty database");
     mayDropDatabase = true;
+    for (const model of Object.values(mongoose.models)) await model.createIndexes();
 };
 
 const closeTestDatabase = async () => {
