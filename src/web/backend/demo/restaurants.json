@@ -1,0 +1,80 @@
+[
+    {
+        "id": "rest_demo_basil_pizza",
+        "location": { "x": 32.07, "y": 34.78 },
+        "name": "Basil Pizza",
+        "description": "Fresh pizza, tomato sauce and melted mozzarella.",
+        "category": "Pizza",
+        "isPromoted": true,
+        "picture": "pizza.jpg",
+        "products": [
+            { "id": "prod_demo_basil_margherita", "name": "Margherita Pizza", "description": "Tomato sauce and mozzarella on a thin, crisp base.", "category": "Pizza", "price": 42, "picture": "pizza.jpg" },
+            { "id": "prod_demo_basil_salad", "name": "Caesar Salad", "description": "Crisp lettuce, croutons, parmesan and Caesar dressing.", "category": "Salads", "price": 32, "picture": "salad.jpg" }
+        ]
+    },
+    {
+        "id": "rest_demo_corner_burger",
+        "location": { "x": 32.075, "y": 34.785 },
+        "name": "Corner Burger",
+        "description": "Cheeseburgers and fries, made to order.",
+        "category": "Burgers",
+        "isPromoted": true,
+        "picture": "burger.jpg",
+        "products": [
+            { "id": "prod_demo_corner_burger", "name": "Cheeseburger and Fries", "description": "Beef burger with cheese, lettuce and a side of fries.", "category": "Burgers", "price": 58, "picture": "burger.jpg" },
+            { "id": "prod_demo_corner_salad", "name": "Caesar Salad", "description": "Lettuce, parmesan and crunchy croutons with Caesar dressing.", "category": "Salads", "price": 34, "picture": "salad.jpg" }
+        ]
+    },
+    {
+        "id": "rest_demo_nori_sushi",
+        "location": { "x": 32.08, "y": 34.79 },
+        "name": "Nori Sushi",
+        "description": "Freshly rolled sushi to share with friends.",
+        "category": "Sushi",
+        "isPromoted": false,
+        "picture": "sushi.jpg",
+        "products": [
+            { "id": "prod_demo_nori_sushi", "name": "Sushi Platter", "description": "A selection of 16 rolls, served with ginger and wasabi.", "category": "Platters", "price": 76, "picture": "sushi.jpg" },
+            { "id": "prod_demo_nori_party", "name": "Party Platter", "description": "A selection of 32 rolls for sharing, with ginger and wasabi.", "category": "Platters", "price": 138, "picture": "sushi.jpg" }
+        ]
+    },
+    {
+        "id": "rest_demo_cafe_noya",
+        "location": { "x": 32.085, "y": 34.795 },
+        "name": "Cafe Noya",
+        "description": "Good coffee and a pastry for your morning break.",
+        "category": "Drinks",
+        "isPromoted": false,
+        "picture": "coffee.jpg",
+        "products": [
+            { "id": "prod_demo_noya_coffee", "name": "Cappuccino", "description": "Espresso with steamed milk and a soft layer of foam.", "category": "Coffee", "price": 16, "picture": "coffee.jpg" },
+            { "id": "prod_demo_noya_croissant", "name": "Cream Croissant", "description": "Golden pastry with a creamy filling and sesame topping.", "category": "Pastries", "price": 20, "picture": "croissant.jpg" }
+        ]
+    },
+    {
+        "id": "rest_demo_morning_bakery",
+        "location": { "x": 32.09, "y": 34.8 },
+        "name": "Morning Bakery",
+        "description": "Golden pastries, fresh from the oven.",
+        "category": "Bakery",
+        "isPromoted": false,
+        "picture": "croissant.jpg",
+        "products": [
+            { "id": "prod_demo_morning_croissant", "name": "Cream Croissant", "description": "A soft, golden pastry with cream and sesame seeds.", "category": "Pastries", "price": 18, "picture": "croissant.jpg" },
+            { "id": "prod_demo_morning_coffee", "name": "Cappuccino", "description": "Espresso and steamed milk, served hot.", "category": "Coffee", "price": 15, "picture": "coffee.jpg" }
+        ]
+    },
+    {
+        "id": "rest_demo_green_bowl",
+        "location": { "x": 32.095, "y": 34.805 },
+        "name": "Green Bowl",
+        "description": "Fresh salads for a light lunch.",
+        "category": "Salads",
+        "isPromoted": false,
+        "picture": "salad.jpg",
+        "products": [
+            { "id": "prod_demo_green_salad", "name": "Caesar Salad", "description": "Lettuce, tomato, croutons and parmesan with Caesar dressing.", "category": "Salads", "price": 38, "picture": "salad.jpg" },
+            { "id": "prod_demo_green_salad_two", "name": "Caesar Salad for Two", "description": "A larger portion of our Caesar salad, made for sharing.", "category": "Salads", "price": 62, "picture": "salad.jpg" }
+        ]
+    }
+]

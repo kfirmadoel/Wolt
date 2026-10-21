@@ -2,21 +2,35 @@ networks:
   wolt-network:
     driver: bridge
 
+volumes:
+  mongo-data:
+  cpp-data:
+
 services:
-  # ============================
-  # C++ SERVER
-  # ============================
+  mongo:
+    image: mongo:8.3.9
+    networks:
+      - wolt-network
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
   cpp-server:
     build:
       context: ./src/server
       dockerfile: Dockerfile.server
-    container_name: cpp-server
     networks:
       - wolt-network
     expose:
       - "12345"
+    volumes:
+      - cpp-data:/usr/src/wolt_project/data
     command: ./build/server 12345
-    profiles: ["dev", "api", "full", "unit"]
     healthcheck:
       test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/12345"]
       interval: 5s
@@ -24,60 +38,73 @@ services:
       retries: 5
       start_period: 10s
 
-  # ============================
-  # NODE.JS WEB SERVER
-  # ============================
   web-server:
     build:
       context: ./src/web
-      dockerfile: Dockerfile.web
-    container_name: web-server
+      dockerfile: backend/Dockerfile.web
+      target: runtime
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
     networks:
       - wolt-network
     depends_on:
+      mongo:
+        condition: service_healthy
       cpp-server:
         condition: service_healthy
     environment:
-      - CPP_SERVER_HOST=cpp-server
-      - CPP_SERVER_PORT=12345
-    profiles: ["dev", "api", "full"]
+      BACKEND_PORT: "3000"
+      MONGO_URI: mongodb://mongo:27017/wolt
+      CPP_SERVER_HOST: cpp-server
+      CPP_SERVER_PORT: "12345"
+      JWT_SECRET: ${JWT_SECRET:-temporary-dev-key-change-me}
 
-  # ============================
-  # C++ TESTS
-  # ============================
-  cpp-tests:
+  mobile:
     build:
-      context: ./src/server
-      dockerfile: Dockerfile.server
-    container_name: cpp-tests
-    networks:
-      - wolt-network
-    depends_on:
-      cpp-server:
-        condition: service_healthy
-    command: sh -c "cd build && make wolt_tests && ./wolt_tests"
-    profiles: ["unit", "full"]
-
-
-  # ============================
-  # API TESTS (SUPERTEST)
-  # ============================
-  api-tests:
-    build:
-      context: ./src/web
-      dockerfile: Dockerfile.web
-    container_name: api-tests
+      context: ./src/mobile
+      dockerfile: Dockerfile.mobile
+    ports:
+      - "${METRO_PORT:-8081}:8081"
     networks:
       - wolt-network
     depends_on:
       web-server:
         condition: service_healthy
-      cpp-server:
-        condition: service_healthy
-    command: npm test -- tests/api/**/*.test.js
     environment:
-      - CPP_SERVER_HOST=cpp-server
-      - CPP_SERVER_PORT=12345
-    profiles: ["api", "full"]
+      EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL:-http://127.0.0.1:3000}
+      EXPO_PACKAGER_PROXY_URL: ${EXPO_PACKAGER_PROXY_URL:-http://127.0.0.1:8081}
+
+  # Tests run separately and do not share the application data.
+  cpp-tests:
+    build:
+      context: ./src/server
+      dockerfile: Dockerfile.server
+    command: sh -c "cmake --build build --target wolt_tests && cd build && ./wolt_tests"
+    profiles: ["unit"]
+
+  mongo-tests:
+    image: mongo:8.3.9
+    networks:
+      - wolt-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    profiles: ["api"]
+
+  api-tests:
+    build:
+      context: ./src/web
+      dockerfile: backend/Dockerfile.web
+      target: test
+    networks:
+      - wolt-network
+    depends_on:
+      mongo-tests:
+        condition: service_healthy
+    command: npm test
+    environment:
+      TEST_MONGO_URI: mongodb://mongo-tests:27017
+    profiles: ["api"]

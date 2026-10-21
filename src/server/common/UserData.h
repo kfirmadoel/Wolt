@@ -30,7 +30,7 @@ public:
      * Returns the user id
      * @return user id
      */
-    std::string getUserId() const; // אפשר גם להחזיר const std::string&
+    std::string getUserId() const; // Could also return const std::string&.
 
     /**
      * Returns the set of watched products by the user
